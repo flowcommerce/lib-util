@@ -1,15 +1,17 @@
 package io.flow.util
 
-import io.flow.util.Config.mustGet
+import io.flow.util.Config._
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.duration.FiniteDuration
-import scala.util.{Failure, Success, Try}
+import scala.util.matching.Regex
+import scala.util.{Failure, Try}
 
 /**
   * Wrapper on play config testing for empty strings and standardizing
   * error message for required configuration.
   */
+//todo trait AbstractConfig; trait Config extends ConfigConcrete
 trait Config {
 
   protected val logger: Logger = LoggerFactory.getLogger(getClass)
@@ -70,6 +72,20 @@ trait Config {
 
   def requiredPositiveInt(name: String): Int = mustGet(name, optionalPositiveInt)
 
+  def optionalFiniteDuration(name: String): Option[FiniteDuration] = {
+    def logAndFail(value: String)(cause: Throwable): Nothing = {
+      val msg = s"FlowError Configuration variable[$name] has invalid value[$value]. Underlying cause: ${cause.getMessage}"
+      logger.error(msg, cause)
+      throw new RuntimeException(msg, cause)
+    }
+
+    optionalString(name).map { stringValue =>
+      duration.parse(stringValue).fold(logAndFail(stringValue), identity)
+    }
+  }
+
+  def requiredFiniteDuration(name: String): FiniteDuration = mustGet(name, optionalFiniteDuration)
+
   def optionalBoolean(name: String): Option[Boolean] = optionalString(name).map { value =>
     Booleans.parse(value).getOrElse {
       val msg = s"FlowError Configuration variable[$name] has invalid value[$value]. Use true, t, false, or f"
@@ -81,12 +97,22 @@ trait Config {
   def requiredBoolean(name: String): Boolean = mustGet(name, optionalBoolean)
 }
 
-object Config {
-  private def mustGet[T](name: String, valueByName: String => Option[T]): T = {
+private object Config {
+  def mustGet[T](name: String, valueByName: String => Option[T]): T = {
     valueByName(name).getOrElse {
       sys.error(s"FlowError Configuration variable[$name] is required")
     }
   }
+
+  object duration {
+    private[duration] val pattern: Regex = """(\d+)\s+(\w+)""".r
+
+    val parse: String => Try[FiniteDuration] = {
+      case duration.pattern(amount, unitString) => Try(FiniteDuration(amount.toLong, unitString))
+      case _ => Failure(new RuntimeException("Invalid pattern of FiniteDuration"))
+    }
+  }
+
 }
 
 case class ChainedConfig(configs: Seq[Config]) extends Config {
