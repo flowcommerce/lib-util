@@ -14,21 +14,21 @@ trait Config {
 
   def optionalList(name: String): Option[Seq[String]]
 
-  def requiredList(name: String): Seq[String] = mustGet(name, optionalList(name))
+  def requiredList(name: String): Seq[String] = mustGet(name, optionalList)
 
   /**
     * Return the value for the configuration parameter with the specified name
     */
   def get(name: String): Option[String]
 
-  def requiredString(name: String): String = mustGet(name, optionalString(name))
+  def requiredString(name: String): String = mustGet(name, optionalString)
 
   def optionalString(name: String): Option[String] = get(name).map(_.trim) match {
     case Some("") => None
     case v => v
   }
 
-  def requiredPositiveLong(name: String): Long = mustGet(name, optionalPositiveLong(name))
+  def requiredPositiveLong(name: String): Long = mustGet(name, optionalPositiveLong)
 
   def optionalPositiveLong(name: String): Option[Long] = optionalLong(name) match {
     case None => None
@@ -39,7 +39,7 @@ trait Config {
     }
   }
 
-  def requiredLong(name: String): Long = mustGet(name, optionalLong(name))
+  def requiredLong(name: String): Long = mustGet(name, optionalLong)
 
   def optionalLong(name: String): Option[Long] = optionalString(name).map { value =>
     Try(value.toLong) match {
@@ -53,7 +53,7 @@ trait Config {
   }
 
 
-  def requiredPositiveInt(name: String): Int = mustGet(name, optionalPositiveInt(name))
+  def requiredPositiveInt(name: String): Int = mustGet(name, optionalPositiveInt)
 
   def optionalPositiveInt(name: String): Option[Int] = optionalInt(name) match {
     case None => None
@@ -64,7 +64,7 @@ trait Config {
     }
   }
 
-  def requiredInt(name: String): Int = mustGet(name, optionalInt(name))
+  def requiredInt(name: String): Int = mustGet(name, optionalInt)
 
   def optionalInt(name: String): Option[Int] = optionalString(name).map { value =>
     Try(value.toInt) match {
@@ -77,7 +77,7 @@ trait Config {
     }
   }
 
-  def requiredBoolean(name: String): Boolean = mustGet(name, optionalBoolean(name))
+  def requiredBoolean(name: String): Boolean = mustGet(name, optionalBoolean)
 
   def optionalBoolean(name: String): Option[Boolean] = optionalString(name).map { value =>
     Booleans.parse(value).getOrElse {
@@ -87,8 +87,8 @@ trait Config {
     }
   }
 
-  private[this] def mustGet[T](name: String, value: Option[T]): T = {
-    value.getOrElse {
+  private[this] def mustGet[T](name: String, valueByName: String => Option[T]): T = {
+    valueByName(name).getOrElse {
       sys.error(s"FlowError Configuration variable[$name] is required")
     }
   }
