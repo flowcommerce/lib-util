@@ -11,6 +11,7 @@ resolvers += "Artifactory" at "https://flow.jfrog.io/flow/libs-release/"
 
 libraryDependencies ++= Seq(
   "org.slf4j" % "slf4j-api" % "1.7.25",
+  "com.typesafe.play" %% "play-json-joda" % "2.6.9",
   "org.scala-lang" % "scala-reflect" % scalaVersion.value,
   "org.mockito" % "mockito-all" % "1.10.19" % Test,
   "org.scalatest" %% "scalatest" % "3.0.1" % Test
