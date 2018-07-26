@@ -105,18 +105,17 @@ object Config {
 
 case class ChainedConfig(configs: Seq[Config]) extends Config {
 
-  override def optionalList(name: String): Option[Seq[String]] = {
-    configs.find { c =>
-      c.optionalList(name).isDefined
-    }.flatMap(_.optionalList(name))
-  }
+  override def get(name: String): Option[String] = optionalFromAny(name, _.optionalString)
 
-  override def get(name: String): Option[String] = {
-    configs.find { c =>
-      c.optionalString(name).isDefined
-    }.flatMap(_.optionalString(name))
-  }
+  override def optionalList(name: String): Option[Seq[String]] = optionalFromAny(name, _.optionalList)
 
+  private[this] def optionalFromAny[T](name: String, get: Config => String => Option[T]): Option[T] =
+    configs.view.flatMap(get(_)(name)).headOption
+}
+
+object ChainedConfig {
+  @deprecated("0.0.7", "Use constructor")
+  def apply(configs: Seq[Config]): ChainedConfig = new ChainedConfig(configs)
 }
 
 object EnvironmentConfig extends Config {
