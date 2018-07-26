@@ -3,11 +3,11 @@ package io.flow.util
 import org.scalatest.{MustMatchers, TryValues, WordSpecLike}
 
 import scala.concurrent.duration._
-import scala.util.Try
 
 class ConfigSpec extends WordSpecLike with MustMatchers with TryValues {
   def mockConfig(memory: (String, String)*): Config = new Config {
     val memoryMap: Map[String, String] = memory.toMap
+
     override def get(name: String): Option[String] = memoryMap.get(name)
 
     override def optionalList(name: String): Option[Seq[String]] = None //unsupported in this test
