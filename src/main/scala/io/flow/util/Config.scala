@@ -1,5 +1,6 @@
 package io.flow.util
 
+import io.flow.util.Config.mustGet
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.util.{Failure, Success, Try}
@@ -12,34 +13,28 @@ trait Config {
 
   protected val logger: Logger = LoggerFactory.getLogger(getClass)
 
-  def optionalList(name: String): Option[Seq[String]]
-
-  def requiredList(name: String): Seq[String] = mustGet(name, optionalList)
+  /*
+   * ABSTRACT METHODS
+   */
 
   /**
-    * Return the value for the configuration parameter with the specified name
+    * Return the raw String value for the configuration parameter with the specified name
     */
   def get(name: String): Option[String]
 
-  def requiredString(name: String): String = mustGet(name, optionalString)
+  def optionalList(name: String): Option[Seq[String]]
 
+  /*
+   * CONCRETE METHODS
+   */
   def optionalString(name: String): Option[String] = get(name).map(_.trim) match {
     case Some("") => None
     case v => v
   }
 
-  def requiredPositiveLong(name: String): Long = mustGet(name, optionalPositiveLong)
+  def requiredString(name: String): String = mustGet(name, optionalString)
 
-  def optionalPositiveLong(name: String): Option[Long] = optionalLong(name) match {
-    case None => None
-    case Some(v) => if (v > 0) {
-      Some(v)
-    } else {
-      sys.error(s"FlowError Configuration variable[$name] has invalid value[$v]: must be > 0")
-    }
-  }
-
-  def requiredLong(name: String): Long = mustGet(name, optionalLong)
+  def requiredList(name: String): Seq[String] = mustGet(name, optionalList)
 
   def optionalLong(name: String): Option[Long] = optionalString(name).map { value =>
     Try(value.toLong) match {
@@ -52,10 +47,9 @@ trait Config {
     }
   }
 
+  def requiredLong(name: String): Long = mustGet(name, optionalLong)
 
-  def requiredPositiveInt(name: String): Int = mustGet(name, optionalPositiveInt)
-
-  def optionalPositiveInt(name: String): Option[Int] = optionalInt(name) match {
+  def optionalPositiveLong(name: String): Option[Long] = optionalLong(name) match {
     case None => None
     case Some(v) => if (v > 0) {
       Some(v)
@@ -64,7 +58,7 @@ trait Config {
     }
   }
 
-  def requiredInt(name: String): Int = mustGet(name, optionalInt)
+  def requiredPositiveLong(name: String): Long = mustGet(name, optionalPositiveLong)
 
   def optionalInt(name: String): Option[Int] = optionalString(name).map { value =>
     Try(value.toInt) match {
@@ -77,7 +71,18 @@ trait Config {
     }
   }
 
-  def requiredBoolean(name: String): Boolean = mustGet(name, optionalBoolean)
+  def requiredInt(name: String): Int = mustGet(name, optionalInt)
+
+  def optionalPositiveInt(name: String): Option[Int] = optionalInt(name) match {
+    case None => None
+    case Some(v) => if (v > 0) {
+      Some(v)
+    } else {
+      sys.error(s"FlowError Configuration variable[$name] has invalid value[$v]: must be > 0")
+    }
+  }
+
+  def requiredPositiveInt(name: String): Int = mustGet(name, optionalPositiveInt)
 
   def optionalBoolean(name: String): Option[Boolean] = optionalString(name).map { value =>
     Booleans.parse(value).getOrElse {
@@ -87,12 +92,15 @@ trait Config {
     }
   }
 
-  private[this] def mustGet[T](name: String, valueByName: String => Option[T]): T = {
+  def requiredBoolean(name: String): Boolean = mustGet(name, optionalBoolean)
+}
+
+object Config {
+  private def mustGet[T](name: String, valueByName: String => Option[T]): T = {
     valueByName(name).getOrElse {
       sys.error(s"FlowError Configuration variable[$name] is required")
     }
   }
-
 }
 
 case class ChainedConfig(configs: Seq[Config]) extends Config {
