@@ -19,7 +19,7 @@ trait Config {
   /**
     * Return the value for the configuration parameter with the specified name
     */
-  def get(name: String): Option[String]
+  protected def get(name: String): Option[String]
 
   def requiredString(name: String): String = mustGet(name, optionalString(name))
 
