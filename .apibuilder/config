@@ -1,0 +1,6 @@
+code:
+  flow:
+    common:
+      version: latest
+      generators:
+        play_2_x_json: src/main/scala/io/flow/common/v0/models
