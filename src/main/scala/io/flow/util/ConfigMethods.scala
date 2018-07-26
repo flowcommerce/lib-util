@@ -6,6 +6,14 @@ import scala.concurrent.duration.FiniteDuration
 import scala.util.matching.Regex
 import scala.util.{Failure, Try}
 
+/**
+  * Concrete Config getters.
+  *
+  * Methods marked with optionalString return None when the field isn't present.
+  * They also throw exceptions if the field's value is present but has an invalid format.
+  *
+  * Methods marked with `requiredString` follow that behavior, but they also throw if the field isn't present.
+  * */
 trait ConfigMethods { self: Config =>
   def optionalString(name: String): Option[String] = get(name).map(_.trim).filterNot(_.isEmpty)
 
