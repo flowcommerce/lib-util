@@ -3,6 +3,7 @@ package io.flow.util
 import io.flow.util.Config.mustGet
 import org.slf4j.{Logger, LoggerFactory}
 
+import scala.concurrent.duration.FiniteDuration
 import scala.util.{Failure, Success, Try}
 
 /**
@@ -27,59 +28,44 @@ trait Config {
   /*
    * CONCRETE METHODS
    */
-  def optionalString(name: String): Option[String] = get(name).map(_.trim) match {
-    case Some("") => None
-    case v => v
-  }
+  def optionalString(name: String): Option[String] = get(name).map(_.trim).filterNot(_.isEmpty)
 
   def requiredString(name: String): String = mustGet(name, optionalString)
 
   def requiredList(name: String): Seq[String] = mustGet(name, optionalList)
 
   def optionalLong(name: String): Option[Long] = optionalString(name).map { value =>
-    Try(value.toLong) match {
-      case Success(v) => v
-      case Failure(_) => {
-        val msg = s"FlowError Configuration variable[$name] has invalid value[$value]: must be a long"
-        logger.error(msg)
-        sys.error(msg)
-      }
+    Try(value.toLong).getOrElse{
+      val msg = s"FlowError Configuration variable[$name] has invalid value[$value]: must be a long"
+      logger.error(msg)
+      sys.error(msg)
     }
   }
 
   def requiredLong(name: String): Long = mustGet(name, optionalLong)
 
-  def optionalPositiveLong(name: String): Option[Long] = optionalLong(name) match {
-    case None => None
-    case Some(v) => if (v > 0) {
-      Some(v)
-    } else {
+  def optionalPositiveLong(name: String): Option[Long] = optionalLong(name).map {
+    case v if v > 0 => v
+    case v =>
       sys.error(s"FlowError Configuration variable[$name] has invalid value[$v]: must be > 0")
-    }
   }
 
   def requiredPositiveLong(name: String): Long = mustGet(name, optionalPositiveLong)
 
   def optionalInt(name: String): Option[Int] = optionalString(name).map { value =>
-    Try(value.toInt) match {
-      case Success(v) => v
-      case Failure(_) => {
-        val msg = s"FlowError Configuration variable[$name] has invalid value[$value]: must be an int"
-        logger.error(msg)
-        sys.error(msg)
-      }
+    Try(value.toInt).getOrElse {
+      val msg = s"FlowError Configuration variable[$name] has invalid value[$value]: must be an int"
+      logger.error(msg)
+      sys.error(msg)
     }
   }
 
   def requiredInt(name: String): Int = mustGet(name, optionalInt)
 
-  def optionalPositiveInt(name: String): Option[Int] = optionalInt(name) match {
-    case None => None
-    case Some(v) => if (v > 0) {
-      Some(v)
-    } else {
+  def optionalPositiveInt(name: String): Option[Int] = optionalInt(name).map {
+    case v if v > 0 => v
+    case v =>
       sys.error(s"FlowError Configuration variable[$name] has invalid value[$v]: must be > 0")
-    }
   }
 
   def requiredPositiveInt(name: String): Int = mustGet(name, optionalPositiveInt)
