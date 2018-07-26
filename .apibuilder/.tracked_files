@@ -1,5 +1,0 @@
----
-flow:
-  common:
-    play_2_x_json:
-    - src/main/scala/io/flow/common/v0/models/FlowCommonV0Models.scala
