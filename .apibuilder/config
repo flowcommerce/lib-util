@@ -1,0 +1,6 @@
+code:
+  flow:
+    common:
+      version: latest
+      generators:
+        scala_modelsgit dif: src/main/scala/io/flow/common/v0/models
