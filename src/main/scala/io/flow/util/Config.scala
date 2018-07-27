@@ -18,7 +18,7 @@ trait Config extends ConfigMethods {
   def optionalList(name: String): Option[Seq[String]]
 }
 
-case class ChainedConfig(configs: Seq[Config]) extends Config {
+class ChainedConfig(configs: Seq[Config]) extends Config {
 
   override def get(name: String): Option[String] = optionalFromAny(name, _.optionalString)
 
