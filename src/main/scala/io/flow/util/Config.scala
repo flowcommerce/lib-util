@@ -17,7 +17,7 @@ trait Config extends ConfigMethods {
 
   def optionalList(name: String): Option[Seq[String]]
 
-  def optionalMap(name: String): Option[Map[String, Seq[String]]] = None
+  def optionalMap(name: String): Option[Map[String, Seq[String]]]
 }
 
 class ChainedConfig(configs: Seq[Config]) extends Config {
@@ -38,10 +38,12 @@ object ChainedConfig {
 }
 
 object EnvironmentConfig extends EnvironmentConfigLike {
+  override protected def sourceName: String = "environment variable"
   override protected def source(): Map[String, String] = sys.env
 }
 
 trait EnvironmentConfigLike extends Config {
+  protected def sourceName: String
   protected def source(): Map[String, String]
 
   override def optionalList(name: String): Option[Seq[String]] = {
@@ -53,7 +55,7 @@ trait EnvironmentConfigLike extends Config {
   override def get(name: String): Option[String] = {
     sys.env.get(name).map(_.trim).map {
       case "" => {
-        val msg = s"FlowError Value for environment variable[$name] cannot be blank"
+        val msg = s"FlowError Value for $sourceName[$name] cannot be blank"
         logger.error(msg)
         sys.error(msg)
       }
@@ -105,22 +107,7 @@ trait EnvironmentConfigLike extends Config {
   }
 }
 
-object PropertyConfig extends Config {
-
-  override def optionalList(name: String): Option[Seq[String]] = {
-    get(name).map { text =>
-      text.split(",").map(_.trim)
-    }
-  }
-
-  override def get(name: String): Option[String] = {
-    sys.props.get(name).map(_.trim).map {
-      case "" => {
-        val msg = s"FlowError Value for system property[$name] cannot be blank"
-        logger.error(msg)
-        sys.error(msg)
-      }
-      case value => value
-    }
-  }
+object PropertyConfig extends EnvironmentConfigLike {
+  override protected def sourceName: String = "system property"
+  override protected def source(): Map[String, String] = sys.props.toMap
 }

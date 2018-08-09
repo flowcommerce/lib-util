@@ -1,6 +1,6 @@
 package io.flow.util
 
-import org.scalatest.{MustMatchers, TryValues, WordSpec, WordSpecLike}
+import org.scalatest.{MustMatchers, TryValues, WordSpec}
 
 import scala.concurrent.duration._
 
@@ -9,6 +9,8 @@ class ConfigSpec extends WordSpec with MustMatchers with TryValues {
     val memoryMap: Map[String, String] = memory.toMap
 
     override def get(name: String): Option[String] = memoryMap.get(name)
+
+    override def optionalMap(name: String): Option[Map[String, Seq[String]]] = None //unsupported in this test
 
     override def optionalList(name: String): Option[Seq[String]] = None //unsupported in this test
   }
@@ -84,6 +86,8 @@ class ConfigSpec extends WordSpec with MustMatchers with TryValues {
 
 class EnvironmentConfigLikeSpec extends WordSpec with MustMatchers {
   val mockConfig: Config = new EnvironmentConfigLike {
+    override protected def sourceName: String = "mock"
+
     override protected def source(): Map[String, String] = Map(
       "HELLO_WORLD_FOO" -> "bar, baz",
       "HELLO_WORLD_BAR_BAZ" -> "foo",
