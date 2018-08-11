@@ -80,6 +80,8 @@ trait ConfigMethods { self: Config =>
   }
 
   def requiredBoolean(name: String): Boolean = mustGet(name, optionalBoolean)
+
+  def requiredMap(name: String): Map[String, Seq[String]] = mustGet(name, optionalMap)
 }
 
 private object ConfigMethods {
