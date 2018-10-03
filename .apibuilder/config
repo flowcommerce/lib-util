@@ -3,4 +3,4 @@ code:
     common:
       version: latest
       generators:
-        scala_modelsgit dif: src/main/scala/io/flow/common/v0/models
+        scala_models: src/main/scala/io/flow/common/v0/models
