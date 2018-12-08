@@ -15,7 +15,12 @@ libraryDependencies ++= Seq(
   "org.scala-lang" % "scala-reflect" % scalaVersion.value,
   "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.1",
   "org.mockito" % "mockito-all" % "1.10.19" % Test,
-  "org.scalatest" %% "scalatest" % "3.0.1" % Test
+  "org.scalatest" %% "scalatest" % "3.0.1" % Test,
+  "io.flow" %% "lib-log" % "0.0.43",
+  // The following will need to be provided by users of this lib,
+  // meaning they can supply their own version (as long as compatible).
+  // Required for lib-log
+  "com.typesafe.play" %% "play-json" % "2.6.10" % Provided
 )
 
 credentials += Credentials(

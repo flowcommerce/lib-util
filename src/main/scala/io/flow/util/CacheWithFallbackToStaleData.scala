@@ -2,9 +2,8 @@ package io.flow.util
 
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoField
-import java.util.function.BiFunction
 
-import org.slf4j.{Logger, LoggerFactory}
+import io.flow.log.RollbarLogger
 
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
@@ -25,7 +24,7 @@ private[util] case class CacheEntry[V](value: V, expiresAt: ZonedDateTime) {
 trait CacheWithFallbackToStaleData[K, V] {
 
   private[this] val cache = new java.util.concurrent.ConcurrentHashMap[K, CacheEntry[V]]()
-  private val logger: Logger = LoggerFactory.getLogger(getClass)
+  def logger: RollbarLogger
 
   /**
     * Defines how long to cache each value for
@@ -67,14 +66,22 @@ trait CacheWithFallbackToStaleData[K, V] {
   }
 
   private[this] def failureFromEmpty(key: K, ex: Throwable): CacheEntry[V] = {
-    val msg = s"FlowError for Cache[${this.getClass.getName}] key[$key]: ${ex.getMessage}"
-    logger.error(msg, ex)
-    sys.error(msg)
+    logger
+      .fingerprint(s"${this.getClass.getName}:failureFromEmpty")
+      .withKeyValue("key", key.toString)
+      .error("Could not find entry in cache", ex)
+
+    sys.error(
+      s"FlowError for Cache[${this.getClass.getName}] key[$key]: ${ex.getMessage}"
+    )
   }
 
   private[this] def failureFromRefresh(key: K, currentEntry: CacheEntry[V], ex: Throwable): CacheEntry[V] = {
-    logger.warn(s"FlowError: Cache[${this.getClass.getName}] key[$key]: Falling back to stale data " +
-      s"as refresh failed with: ${ex.getMessage}", ex)
+    logger
+      .fingerprint(s"${this.getClass.getName}:failureFromRefresh")
+      .withKeyValue("key", key.toString)
+      .warn("Refresh failed - falling back to stale data", ex)
+
     currentEntry
   }
 
