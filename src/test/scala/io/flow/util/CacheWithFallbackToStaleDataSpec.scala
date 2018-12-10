@@ -1,5 +1,6 @@
 package io.flow.util
 
+import io.flow.log.{RollbarLogger, RollbarProvider}
 import org.scalatest.{MustMatchers, WordSpecLike}
 import org.scalatest.concurrent.Eventually.{eventually, timeout}
 import org.scalatest.time.{Seconds, Span}
@@ -8,7 +9,9 @@ import scala.concurrent.duration._
 
 class CacheWithFallbackToStaleDataSpec extends WordSpecLike with MustMatchers {
 
-  private[this] case class TestCacheWithFallbackToStaleData() extends CacheWithFallbackToStaleData[String, String] {
+  private[this] case class TestCacheWithFallbackToStaleData(
+    override val logger: RollbarLogger = RollbarProvider.logger("token")
+  ) extends CacheWithFallbackToStaleData[String, String] {
 
     private[this] val data = scala.collection.mutable.Map[String, String]()
     private[this] val nextValues = scala.collection.mutable.Map[String, String]()
