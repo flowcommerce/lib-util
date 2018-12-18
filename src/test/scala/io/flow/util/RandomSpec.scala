@@ -7,7 +7,7 @@ class RandomSpec extends WordSpecLike with MustMatchers {
   private[this] val random = Random()
   private[this] val Length = 100
 
-  def validate(alphabet: String, values: Seq[String]) {
+  def validate(alphabet: String, values: Seq[String]): Unit = {
     val letters = alphabet.split("")
     values.distinct.size must be(values.size)
     values.forall { _.size == Length } must be(true)
@@ -31,7 +31,7 @@ class RandomSpec extends WordSpecLike with MustMatchers {
     }
   }
 
-  def validateDoesNotStartWithNumber(values: Seq[String]) {
+  def validateDoesNotStartWithNumber(values: Seq[String]): Unit = {
     val numbers = "0123456789".split("")
     val found = values.filter { v => numbers.contains(v.substring(0, 1)) }
     if (!found.isEmpty) {

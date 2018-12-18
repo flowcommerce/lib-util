@@ -61,9 +61,9 @@ case class Version(value: String, tags: Seq[Tag]) extends Ordered[Version] {
       // semver portions to just enable natural semver ordering.
       offset = tags.lift(i + 1) match {
         case None => offset
-        case Some(t: Tag.Text) => offset - 1
-        case Some(t: Tag.Date) => offset - 1
-        case Some(t: Tag.Semver) => offset
+        case Some(_: Tag.Text) => offset - 1
+        case Some(_: Tag.Date) => offset - 1
+        case Some(_: Tag.Semver) => offset
       }
 
       val remaining = Tag.MaxPadding - (tags.length - offset)
@@ -78,14 +78,6 @@ case class Version(value: String, tags: Seq[Tag]) extends Ordered[Version] {
   def compare(that: Version) = {
     sortKey.compare(that.sortKey)
   }
-
-  private[this] def isSemver(tag: Tag): Boolean = {
-    tag match {
-      case Tag.Semver(_, _, _, _) => true
-      case Tag.Date(_, _) | Tag.Text(_) => false
-    }
-  }
-
 }
 
 object Version {

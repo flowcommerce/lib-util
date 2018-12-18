@@ -51,7 +51,7 @@ object RegistryConstants {
     }
   }
 
-  def log(env: String, applicationId: String, message: String) {
+  def log(env: String, applicationId: String, message: String): Unit = {
     logger.info(s"[${getClass.getName} $env] app[$applicationId] $message")
   }
 
@@ -63,19 +63,19 @@ object RegistryConstants {
     s"https://$applicationId.$ProductionDomain"
   }
 
-  def developmentHost(applicationId: String, port: Long): String = {
+  def developmentHost(port: Long): String = {
     s"http://$devHost:$port"
   }
 
-  def workstationHost(applicationId: String, port: Long): String = {
+  def workstationHost(port: Long): String = {
     s"http://$workstationHost:$port"
   }
 
   def host(applicationId: String, port: Long): String = {
     FlowEnvironment.Current match {
       case FlowEnvironment.Production => productionHost(applicationId)
-      case FlowEnvironment.Development => developmentHost(applicationId, port)
-      case FlowEnvironment.Workstation => workstationHost(applicationId, port)
+      case FlowEnvironment.Development => developmentHost(port)
+      case FlowEnvironment.Workstation => workstationHost(port)
     }
   }
 

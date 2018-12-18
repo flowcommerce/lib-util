@@ -188,7 +188,7 @@ class VersionParserSpec extends WordSpec with MustMatchers {
     assertSorted(Seq("1.0.1", "1.0.1-dev", "1.0.2", "1.0.0"), "1.0.0 1.0.1-dev 1.0.1 1.0.2")
   }
 
-  def assertSorted(versions: Seq[String], target: String) {
+  def assertSorted(versions: Seq[String], target: String) = {
     versions.map( VersionParser.parse(_) ).sorted.map(_.value).mkString(" ") must be(target)
   }
 }
