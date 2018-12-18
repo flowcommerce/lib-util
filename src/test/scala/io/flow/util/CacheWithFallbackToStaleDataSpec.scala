@@ -22,11 +22,11 @@ class CacheWithFallbackToStaleDataSpec extends WordSpecLike with MustMatchers {
         numberRefreshes += 1
         data += key -> nextValues.getOrElse(
           key,
-          data.getOrElse(key, sys.error("Missing test data for key[$key]"))
+          data.getOrElse(key, sys.error(s"Missing test data for key[$key]"))
         )
       }
 
-      data.getOrElse(key, sys.error("Missing test data for key[$key]"))
+      data.getOrElse(key, sys.error(s"Missing test data for key[$key]"))
     }
 
     def setNextValue(key: String, value: String): Unit = {
@@ -39,7 +39,7 @@ class CacheWithFallbackToStaleDataSpec extends WordSpecLike with MustMatchers {
   }
 
   private[this] def eventuallyInNSeconds[T](n: Int)(f: => T): T = {
-    eventually(timeout(Span(n, Seconds))) {
+    eventually(timeout(Span(n.toLong, Seconds))) {
       f
     }
   }

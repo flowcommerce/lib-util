@@ -2,7 +2,6 @@ package io.flow.util
 
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoField
-import java.util.function.BiFunction
 
 import org.slf4j.{Logger, LoggerFactory}
 
@@ -38,10 +37,12 @@ trait CacheWithFallbackToStaleData[K, V] {
     * Marks the specified key as expired. On next access, will attempt to refresh. Note that
     * if refresh fails, we will continue to return the stale data.
     */
-  def flush(key: K): Unit =
+  def flush(key: K): Unit = {
     cache.computeIfPresent(key, (_: K, entry: CacheEntry[V]) => {
       entry.copy(expiresAt = ZonedDateTime.now.minus(1, ChronoField.MILLI_OF_DAY.getBaseUnit))
     })
+    ()
+  }
 
   def get(key: K): V = {
     // try to do a quick get first
@@ -80,7 +81,7 @@ trait CacheWithFallbackToStaleData[K, V] {
 
   private[this] def doGetEntry(key: K)(failureFunction: Throwable => CacheEntry[V]): CacheEntry[V] = {
     Try(refresh(key)) match {
-      case Success(value) => CacheEntry(value = value, expiresAt = ZonedDateTime.now.plusSeconds(duration.toSeconds.toInt))
+      case Success(value) => CacheEntry(value = value, expiresAt = ZonedDateTime.now.plusSeconds(duration.toSeconds))
       case Failure(ex) => failureFunction(ex)
     }
   }

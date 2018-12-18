@@ -53,7 +53,7 @@ class IdGeneratorSpec extends WordSpecLike with MustMatchers {
         prefix must be("tst")
         uuid.length must be(32)
       }
-      case other => {
+      case _ => {
         sys.error("Expected one dash")
       }
     }
