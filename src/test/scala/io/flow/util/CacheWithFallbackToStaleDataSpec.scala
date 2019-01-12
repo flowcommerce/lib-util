@@ -8,16 +8,14 @@ import scala.concurrent.duration._
 
 class CacheWithFallbackToStaleDataSpec extends WordSpecLike with MustMatchers {
 
-  private[this] case class TestCacheWithFallbackToStaleData() extends CacheWithFallbackToStaleData[String, String] {
+  private[this] case class TestCacheWithFallbackToStaleData[T]() extends CacheWithFallbackToStaleData[String, T] {
 
-    private[this] val data = scala.collection.mutable.Map[String, String]()
-    private[this] val nextValues = scala.collection.mutable.Map[String, String]()
+    private[this] val data = scala.collection.mutable.Map[String, T]()
+    private[this] val nextValues = scala.collection.mutable.Map[String, T]()
     var numberRefreshes: Int = 0
     var refreshShouldFail = false
 
-    override val duration: FiniteDuration = FiniteDuration(1, SECONDS)
-
-    override def refresh(key: String): String = {
+    override def refresh(key: String): T = {
       if (!refreshShouldFail) {
         numberRefreshes += 1
         data += key -> nextValues.getOrElse(
@@ -29,11 +27,11 @@ class CacheWithFallbackToStaleDataSpec extends WordSpecLike with MustMatchers {
       data.getOrElse(key, sys.error(s"Missing test data for key[$key]"))
     }
 
-    def setNextValue(key: String, value: String): Unit = {
+    def setNextValue(key: String, value: T): Unit = {
       nextValues += (key -> value)
     }
 
-    def set(key: String, value: String): Unit = {
+    def set(key: String, value: T): Unit = {
       data += (key -> value)
     }
   }
@@ -45,7 +43,9 @@ class CacheWithFallbackToStaleDataSpec extends WordSpecLike with MustMatchers {
   }
 
   "cached values are served" in {
-    val cache = TestCacheWithFallbackToStaleData()
+    val cache = new TestCacheWithFallbackToStaleData[String]() {
+      override val duration: FiniteDuration = FiniteDuration(1, SECONDS)
+    }
     cache.set("a", "apple")
 
     // Test cache hit
@@ -61,7 +61,7 @@ class CacheWithFallbackToStaleDataSpec extends WordSpecLike with MustMatchers {
   }
 
   "supports multiple keys" in {
-    val cache = TestCacheWithFallbackToStaleData()
+    val cache = TestCacheWithFallbackToStaleData[String]()
     cache.set("a", "apple")
     cache.set("p", "pear")
 
@@ -70,7 +70,7 @@ class CacheWithFallbackToStaleDataSpec extends WordSpecLike with MustMatchers {
   }
 
   "failed refresh handled gracefully" in {
-    val cache = TestCacheWithFallbackToStaleData()
+    val cache = TestCacheWithFallbackToStaleData[String]()
     cache.set("a", "apple")
     cache.get("a") must equal("apple")
 
@@ -84,7 +84,7 @@ class CacheWithFallbackToStaleDataSpec extends WordSpecLike with MustMatchers {
   }
 
   "flushed key serves stale data if refresh fails" in {
-    val cache = TestCacheWithFallbackToStaleData()
+    val cache = TestCacheWithFallbackToStaleData[String]()
     cache.set("a", "apple")
     cache.flush("a")
 
@@ -96,7 +96,7 @@ class CacheWithFallbackToStaleDataSpec extends WordSpecLike with MustMatchers {
   }
 
   "flushed key is immediately refreshed" in {
-    val cache = TestCacheWithFallbackToStaleData()
+    val cache = TestCacheWithFallbackToStaleData[String]()
     cache.set("a", "apple")
     cache.setNextValue("a", "foo")
     cache.flush("a")
@@ -106,13 +106,33 @@ class CacheWithFallbackToStaleDataSpec extends WordSpecLike with MustMatchers {
   }
 
   "flushing key triggers refresh" in {
-    val cache = TestCacheWithFallbackToStaleData()
+    val cache = TestCacheWithFallbackToStaleData[String]()
     cache.setNextValue("a", "apple")
     cache.get("a") must equal("apple")
     cache.setNextValue("a", "foo")
     cache.get("a") must not equal("foo")
     cache.flush("a")
     cache.get("a") must equal("foo")
+  }
+
+  "Caching none is cached for short period of time, some for longer" in {
+    val cache = TestCacheWithFallbackToStaleData[Option[String]]()
+    cache.setNextValue("a", Some("baz"))
+    cache.setNextValue("b", None)
+
+    cache.get("a") must equal(Some("baz"))
+    cache.get("b") must equal(None)
+
+    cache.setNextValue("a", Some("baz2"))
+    cache.setNextValue("b", Some("foo"))
+
+    cache.get("a") must equal(Some("baz"))
+    cache.get("b") must equal(None)
+
+    eventuallyInNSeconds(2) {
+      cache.get("b") must equal(Some("foo"))
+    }
+    cache.get("a") must equal(Some("baz"))  // still cached
   }
 
 }
