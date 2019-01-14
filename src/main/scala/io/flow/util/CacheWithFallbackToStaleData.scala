@@ -29,7 +29,25 @@ trait CacheWithFallbackToStaleData[K, V] {
   /**
     * Defines how long to cache each value for
     */
-  val duration: FiniteDuration = FiniteDuration(1, MINUTES)
+  def duration: FiniteDuration = FiniteDuration(1, MINUTES)
+
+  private[this] val DefaultDurationSecondsForNone = 2L
+
+  /**
+    * If the result of the operation is either None, defines
+    * how long we cache this value for. A common use case at
+    * Flow is caching the lookup of an item - this allows us
+    * to more quickly check if that item is now defined which
+    * is a common case when consuming events. Defaults to
+    * the lower of the overall cache duration or 2 seconds.
+    */
+  def durationForNone: FiniteDuration = FiniteDuration(
+    Seq(DefaultDurationSecondsForNone, duration.toSeconds).min,
+    SECONDS
+  )
+
+  private[this] lazy val durationSeconds = duration.toSeconds
+  private[this] lazy val durationForNoneSeconds = durationForNone.toSeconds
 
   def refresh(key: K): V
 
@@ -81,9 +99,22 @@ trait CacheWithFallbackToStaleData[K, V] {
 
   private[this] def doGetEntry(key: K)(failureFunction: Throwable => CacheEntry[V]): CacheEntry[V] = {
     Try(refresh(key)) match {
-      case Success(value) => CacheEntry(value = value, expiresAt = ZonedDateTime.now.plusSeconds(duration.toSeconds))
+      case Success(value) => {
+        CacheEntry(
+          value = value,
+          expiresAt = ZonedDateTime.now.plusSeconds(expirationInSeconds(value))
+        )
+      }
       case Failure(ex) => failureFunction(ex)
     }
   }
 
+  private[this] def expirationInSeconds(value: V): Long = {
+    value match {
+      case option: Option[_] =>
+        option.fold(durationForNoneSeconds)(_ => durationSeconds)
+      case _ =>
+        durationSeconds
+    }
+  }
 }
