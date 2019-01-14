@@ -31,7 +31,7 @@ trait CacheWithFallbackToStaleData[K, V] {
     */
   def duration: FiniteDuration = FiniteDuration(1, MINUTES)
 
-  private[this] val DefaultDurationSecondsForNone = 2l
+  private[this] val DefaultDurationSecondsForNone = 2L
 
   /**
     * If the result of the operation is either None, defines
@@ -112,10 +112,7 @@ trait CacheWithFallbackToStaleData[K, V] {
   private[this] def expirationInSeconds(value: V): Long = {
     value match {
       case option: Option[_] =>
-        option match {
-          case None => durationForNoneSeconds
-          case Some(_) => durationSeconds
-        }
+        option.fold(durationForNoneSeconds)(_ => durationSeconds)
       case _ =>
         durationSeconds
     }
