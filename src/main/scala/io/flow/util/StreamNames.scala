@@ -1,6 +1,6 @@
 package io.flow.util
 
-import scala.reflect.runtime.universe._
+import scala.reflect._
 
 case class ApidocClass(
                         namespace: String,
@@ -69,8 +69,8 @@ object StreamNames {
     * Returns the stream name based on the type of the class (a Right), or a validation
     * error if the class name if invalid (a Left)
     */
-  def fromType[T: TypeTag]: Either[Seq[String], String] = {
-    val name = typeOf[T].toString
+  def fromType[T: ClassTag]: Either[Seq[String], String] = {
+    val name = classTag[T].toString
 
     StreamNames(FlowEnvironment.Current).json(name) match {
       case None => {
