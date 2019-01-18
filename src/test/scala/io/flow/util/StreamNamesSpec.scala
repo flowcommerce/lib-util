@@ -46,7 +46,7 @@ class StreamNamesSpec extends WordSpecLike with MustMatchers {
       Left(List("FlowKinesisError Stream[Nothing] In order to consume events, you must annotate the type you are expecting as this is used to build the stream. Type should be something like io.flow.user.v0.unions.SomeEvent"))
     )
     StreamNames.fromType[String] must be(
-      Left(List("FlowKinesisError Stream[String] Could not parse stream name. Expected something like io.flow.user.v0.unions.SomeEvent"))
+      Left(List("FlowKinesisError Stream[java.lang.String] Could not parse stream name. Expected something like io.flow.user.v0.unions.SomeEvent"))
     )
   }
 
