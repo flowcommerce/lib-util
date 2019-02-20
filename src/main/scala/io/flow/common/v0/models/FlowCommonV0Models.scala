@@ -159,8 +159,8 @@ package io.flow.common.v0.models {
   )
 
   final case class DatetimeRange(
-    from: _root_.org.joda.time.DateTime,
-    to: _root_.org.joda.time.DateTime
+    from: _root_.java.time.Instant,
+    to: _root_.java.time.Instant
   )
 
   final case class Dimension(
