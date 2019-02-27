@@ -1,6 +1,6 @@
 package io.flow.util
 
-import java.time.format.DateTimeFormatter
+import java.time.format.{DateTimeFormatter, DateTimeFormatterBuilder, SignStyle}
 import java.time.temporal.{ChronoField, Temporal}
 import java.time.{Instant, LocalDate, OffsetDateTime, ZoneId, ZonedDateTime}
 
@@ -16,6 +16,35 @@ object DateHelper {
   val EasternTimezone: ZoneId = ZoneId.of("America/New_York")
 
   val UTCTimeZone: ZoneId = ZoneId.of("UTC")
+
+  /**
+    * DateTimeFormatter that emulates the very flexible joda ISODateTimeFormat.dateTimeParser.
+    * Should only be used for parsing Strings into TemporalAccessor (Instant/OffsetDateTime/ZonedDateTime)
+    * and not for formatting TemporalAccessor to String.
+    */
+  val ISODateTimeParser = new DateTimeFormatterBuilder().
+    parseCaseInsensitive.
+    optionalStart.appendValue(ChronoField.YEAR, 4, 19, SignStyle.EXCEEDS_PAD).
+    optionalStart.appendLiteral('-').appendValue(ChronoField.MONTH_OF_YEAR, 2).
+    optionalStart.appendLiteral('-').appendValue(ChronoField.DAY_OF_MONTH, 2).
+    optionalEnd.optionalEnd.optionalEnd.
+    optionalStart.appendLiteral('T').appendValue(ChronoField.HOUR_OF_DAY).
+    optionalStart.appendLiteral(':').appendValue(ChronoField.MINUTE_OF_HOUR, 2).
+    optionalStart.appendLiteral(':').appendValue(ChronoField.SECOND_OF_MINUTE, 2).
+    optionalStart.appendLiteral('.').appendFraction(ChronoField.NANO_OF_SECOND, 1, 9, false).
+    optionalEnd.optionalEnd.optionalEnd.optionalEnd.
+    optionalStart.appendOffsetId.optionalEnd.
+    optionalStart.appendLiteral('[').appendZoneId.appendLiteral(']').optionalEnd.
+    parseDefaulting(ChronoField.ERA, 1L).
+    parseDefaulting(ChronoField.YEAR, 1970L).
+    parseDefaulting(ChronoField.MONTH_OF_YEAR, 1L).
+    parseDefaulting(ChronoField.DAY_OF_MONTH, 1L).
+    parseDefaulting(ChronoField.HOUR_OF_DAY, 0L).
+    parseDefaulting(ChronoField.MINUTE_OF_HOUR, 0L).
+    parseDefaulting(ChronoField.SECOND_OF_MINUTE, 0L).
+    parseDefaulting(ChronoField.NANO_OF_SECOND, 0L).
+    parseDefaulting(ChronoField.OFFSET_SECONDS,0L).
+    toFormatter
 
   /**
     * Turns "1" into "01", leaves "12" as "12"

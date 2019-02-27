@@ -205,4 +205,103 @@ class DateHelperSpec extends WordSpecLike with MustMatchers {
       datetimes.sorted must equal(datetimes.reverse)
     }
   }
+
+  "IsoDateTime parser" should {
+    import DateHelper.ISODateTimeParser
+    "All defaults" in {
+      ISODateTimeParser.parse("", Instant.from(_)) mustBe Instant.parse("1970-01-01T00:00:00Z")
+    }
+
+    "Year only" in {
+      ISODateTimeParser.parse("2019", Instant.from(_)) mustBe Instant.parse("2019-01-01T00:00:00Z")
+    }
+
+    "Year and month" in {
+      ISODateTimeParser.parse("2019-02", Instant.from(_)) mustBe Instant.parse("2019-02-01T00:00:00Z")
+    }
+
+    "Year month and day" in {
+      ISODateTimeParser.parse("2019-02-26", Instant.from(_)) mustBe Instant.parse("2019-02-26T00:00:00Z")
+    }
+
+    "Hour only" in {
+      ISODateTimeParser.parse("T10", Instant.from(_)) mustBe Instant.parse("1970-01-01T10:00:00Z")
+    }
+
+    "Hour and minute" in {
+      ISODateTimeParser.parse("T10:15", Instant.from(_)) mustBe Instant.parse("1970-01-01T10:15:00Z")
+    }
+
+    "Hour minute and second" in {
+      ISODateTimeParser.parse("T10:15:33", Instant.from(_)) mustBe Instant.parse("1970-01-01T10:15:33Z")
+    }
+
+    "Hour minute second and millis" in {
+      ISODateTimeParser.parse("T10:15:33.141", Instant.from(_)) mustBe Instant.parse("1970-01-01T10:15:33.141Z")
+    }
+
+    "Hour minute second millis and micro" in {
+      ISODateTimeParser.parse("T10:15:33.141592", Instant.from(_)) mustBe Instant.parse("1970-01-01T10:15:33.141592Z")
+    }
+
+    "Hour minute second millis micro and nano" in {
+      ISODateTimeParser.parse("T10:15:33.141592653", Instant.from(_)) mustBe Instant.parse("1970-01-01T10:15:33.141592653Z")
+    }
+
+    "Date and hour" in {
+      ISODateTimeParser.parse("2019-02-26T10", Instant.from(_)) mustBe Instant.parse("2019-02-26T10:00:00Z")
+    }
+
+    "Date hour minute second millis micro and nano" in {
+      ISODateTimeParser.parse("2019-02-26T10:15:33.141592653", Instant.from(_)) mustBe Instant.parse("2019-02-26T10:15:33.141592653Z")
+    }
+
+    "Date hour and zulu" in {
+      ISODateTimeParser.parse("2019-02-26T10Z", Instant.from(_)) mustBe Instant.parse("2019-02-26T10:00:00Z")
+    }
+
+    "Date hour minute and zulu" in {
+      ISODateTimeParser.parse("2019-02-26T10:15Z", Instant.from(_)) mustBe Instant.parse("2019-02-26T10:15:00Z")
+    }
+
+    "Date hour minute second and zulu" in {
+      ISODateTimeParser.parse("2019-02-26T10:15:33Z", Instant.from(_)) mustBe Instant.parse("2019-02-26T10:15:33Z")
+    }
+
+    "Date time and zulu" in {
+      ISODateTimeParser.parse("2019-02-26T10:15:33.141592653Z", Instant.from(_)) mustBe Instant.parse("2019-02-26T10:15:33.141592653Z")
+    }
+
+    "Hour and second offset" in {
+      ISODateTimeParser.parse("T10+02:10:20", Instant.from(_)) mustBe Instant.parse("1970-01-01T07:49:40Z")
+    }
+
+    "Date time and second offset" in {
+      ISODateTimeParser.parse("2019-02-26T10:15:33.141592653+02:10:20", Instant.from(_)) mustBe Instant.parse("2019-02-26T08:05:13.141592653Z")
+    }
+
+    "Date time and minute offset" in {
+      ISODateTimeParser.parse("2019-02-26T10:15:33.141592653+02:10", Instant.from(_)) mustBe Instant.parse("2019-02-26T08:05:33.141592653Z")
+    }
+
+    "Hour and minute offset" in {
+      ISODateTimeParser.parse("T10+02:10", Instant.from(_)) mustBe Instant.parse("1970-01-01T07:50:00Z")
+    }
+
+    "Hour and timezone" in {
+      ISODateTimeParser.parse("T10[America/Los_Angeles]", Instant.from(_)) mustBe Instant.parse("1970-01-01T18:00:00Z")
+    }
+
+    "Date time and timezone" in {
+      ISODateTimeParser.parse("2019-02-26T10:15:33.141592653[America/Los_Angeles]", Instant.from(_)) mustBe Instant.parse("2019-02-26T18:15:33.141592653Z")
+    }
+
+    "Hour offset and timezone" in {
+      ISODateTimeParser.parse("T10+01:00[America/Los_Angeles]", Instant.from(_)) mustBe Instant.parse("1970-01-01T18:00:00Z")
+    }
+
+    "Date time offset and timezone" in {
+      ISODateTimeParser.parse("2019-02-26T10:15:33.141592653+01:00[America/Los_Angeles]", Instant.from(_)) mustBe Instant.parse("2019-02-26T18:15:33.141592653Z")
+    }
+  }
 }
