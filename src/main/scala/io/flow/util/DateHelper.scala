@@ -17,7 +17,11 @@ object DateHelper {
 
   val UTCTimeZone: ZoneId = ZoneId.of("UTC")
 
-  // Emulates the very flexible joda ISODateTimeFormat.dateTimeParser
+  /**
+    * DateTimeFormatter that emulates the very flexible joda ISODateTimeFormat.dateTimeParser.
+    * Should only be used for parsing Strings into TemporalAccessor (Instant/OffsetDateTime/ZonedDateTime)
+    * and not for formatting TemporalAccessor to String.
+    */
   val ISODateTimeParser = new DateTimeFormatterBuilder().
     parseCaseInsensitive.
     optionalStart.appendValue(ChronoField.YEAR, 4, 19, SignStyle.EXCEEDS_PAD).
