@@ -42,19 +42,19 @@ class RandomSpec extends WordSpecLike with MustMatchers {
   "lowercaseAlpha" in {
     validate(
       "abcdefghijklmnopqrstuvwxyz",
-      1.to(100).map { i => random.lowercaseAlpha(Length) }
+      1.to(100).map { _ => random.lowercaseAlpha(Length) }
     )
   }
 
   "alpha" in {
     validate(
       "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
-      1.to(100).map { i => random.alpha(Length) }
+      1.to(100).map { _ => random.alpha(Length) }
     )
   }
 
   "alphaNumeric" in {
-    val values = 1.to(100).map { i => random.alphaNumeric(Length) }
+    val values = 1.to(100).map { _ => random.alphaNumeric(Length) }
     validate(
       s"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
       values
@@ -63,7 +63,7 @@ class RandomSpec extends WordSpecLike with MustMatchers {
   }
 
   "alphaNumericNonAmbiguous" in {
-    val values = 1.to(100).map { i => random.alphaNumericNonAmbiguous(Length) }
+    val values = 1.to(100).map { _ => random.alphaNumericNonAmbiguous(Length) }
     validate(
       s"abcdefghijkmnpqrstuvwxyzACEFHJKLMNPRTUVWXY3479",
       values
@@ -72,13 +72,13 @@ class RandomSpec extends WordSpecLike with MustMatchers {
   }
 
   "positiveInt" in {
-    val values = 1.to(100).map { i => random.positiveInt() }
+    val values = 1.to(100).map { _ => random.positiveInt() }
     values.distinct.size must be(values.size)
     values.forall { i => i > 0 } must be(true)
   }
 
   "positiveLong" in {
-    val values = 1.to(100).map { i => random.positiveLong() }
+    val values = 1.to(100).map { _ => random.positiveLong() }
     values.distinct.size must be(values.size)
     values.forall { i => i > 0 } must be(true)
   }
