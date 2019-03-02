@@ -4,3 +4,8 @@ code:
       version: latest
       generators:
         scala_models: src/main/scala/io/flow/common/v0/models
+
+attributes:
+  generators:
+    "*":
+      scala_generator.time_library: java

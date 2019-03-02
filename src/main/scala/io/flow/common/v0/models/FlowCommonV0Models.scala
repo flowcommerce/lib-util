@@ -159,8 +159,8 @@ package io.flow.common.v0.models {
   )
 
   final case class DatetimeRange(
-    from: _root_.org.joda.time.DateTime,
-    to: _root_.org.joda.time.DateTime
+    from: _root_.java.time.Instant,
+    to: _root_.java.time.Instant
   )
 
   final case class Dimension(
@@ -403,7 +403,7 @@ package io.flow.common.v0.models {
     environment: io.flow.common.v0.models.Environment,
     parent: _root_.scala.Option[io.flow.common.v0.models.OrganizationReference] = None,
     defaults: _root_.scala.Option[io.flow.common.v0.models.OrganizationDefaults] = None,
-    createdAt: _root_.scala.Option[_root_.org.joda.time.DateTime] = None
+    createdAt: _root_.scala.Option[_root_.java.time.Instant] = None
   ) extends ExpandableOrganization
 
   /**
