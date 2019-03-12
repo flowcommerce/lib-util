@@ -149,12 +149,21 @@ package io.flow.common.v0.models {
    * 
    * @param phone Customer phone number. Useful for both fraud and order delivery.
    * @param email Customer email address. Useful for fraud.
+   * @param invoice Customer invoice details.
    */
   final case class Customer(
     name: io.flow.common.v0.models.Name,
     number: _root_.scala.Option[String] = None,
     phone: _root_.scala.Option[String] = None,
     email: _root_.scala.Option[String] = None,
+    address: _root_.scala.Option[io.flow.common.v0.models.BillingAddress] = None,
+    invoice: _root_.scala.Option[io.flow.common.v0.models.CustomerInvoice] = None
+  )
+
+  /**
+   * @param address The address to be used for invoicing and harmonization.
+   */
+  final case class CustomerInvoice(
     address: _root_.scala.Option[io.flow.common.v0.models.BillingAddress] = None
   )
 
