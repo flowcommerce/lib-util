@@ -220,20 +220,40 @@ class DateHelperSpec extends WordSpecLike with MustMatchers {
       ISODateTimeParser.parse("2019-02", Instant.from(_)) mustBe Instant.parse("2019-02-01T00:00:00Z")
     }
 
+    "Year and short month" in {
+      ISODateTimeParser.parse("2019-2", Instant.from(_)) mustBe Instant.parse("2019-02-01T00:00:00Z")
+    }
+
     "Year month and day" in {
       ISODateTimeParser.parse("2019-02-26", Instant.from(_)) mustBe Instant.parse("2019-02-26T00:00:00Z")
+    }
+
+    "Year short month and short day" in {
+      ISODateTimeParser.parse("2019-2-6", Instant.from(_)) mustBe Instant.parse("2019-02-06T00:00:00Z")
     }
 
     "Hour only" in {
       ISODateTimeParser.parse("T10", Instant.from(_)) mustBe Instant.parse("1970-01-01T10:00:00Z")
     }
 
+    "Short hour only" in {
+      ISODateTimeParser.parse("T1", Instant.from(_)) mustBe Instant.parse("1970-01-01T01:00:00Z")
+    }
+
     "Hour and minute" in {
       ISODateTimeParser.parse("T10:15", Instant.from(_)) mustBe Instant.parse("1970-01-01T10:15:00Z")
     }
 
+    "Short hour and short minute" in {
+      ISODateTimeParser.parse("T1:5", Instant.from(_)) mustBe Instant.parse("1970-01-01T01:05:00Z")
+    }
+
     "Hour minute and second" in {
       ISODateTimeParser.parse("T10:15:33", Instant.from(_)) mustBe Instant.parse("1970-01-01T10:15:33Z")
+    }
+
+    "Short hour short minute and short second" in {
+      ISODateTimeParser.parse("T2:5:3", Instant.from(_)) mustBe Instant.parse("1970-01-01T02:05:03Z")
     }
 
     "Hour minute second and millis" in {

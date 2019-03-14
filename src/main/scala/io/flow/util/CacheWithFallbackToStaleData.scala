@@ -92,7 +92,7 @@ trait CacheWithFallbackToStaleData[K, V] {
   }
 
   private[this] def failureFromRefresh(key: K, currentEntry: CacheEntry[V], ex: Throwable): CacheEntry[V] = {
-    logger.warn(s"FlowError: Cache[${this.getClass.getName}] key[$key]: Falling back to stale data " +
+    logger.warn(s"Cache[${this.getClass.getName}] key[$key]: Falling back to stale data " +
       s"as refresh failed with: ${ex.getMessage}", ex)
     currentEntry
   }
