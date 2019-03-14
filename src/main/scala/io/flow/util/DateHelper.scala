@@ -25,12 +25,12 @@ object DateHelper {
   val ISODateTimeParser = new DateTimeFormatterBuilder().
     parseCaseInsensitive.
     optionalStart.appendValue(ChronoField.YEAR, 4, 19, SignStyle.EXCEEDS_PAD).
-    optionalStart.appendLiteral('-').appendValue(ChronoField.MONTH_OF_YEAR, 2).
-    optionalStart.appendLiteral('-').appendValue(ChronoField.DAY_OF_MONTH, 2).
+    optionalStart.appendLiteral('-').appendValue(ChronoField.MONTH_OF_YEAR, 1, 2, SignStyle.NOT_NEGATIVE).
+    optionalStart.appendLiteral('-').appendValue(ChronoField.DAY_OF_MONTH, 1, 2, SignStyle.NOT_NEGATIVE).
     optionalEnd.optionalEnd.optionalEnd.
-    optionalStart.appendLiteral('T').appendValue(ChronoField.HOUR_OF_DAY).
-    optionalStart.appendLiteral(':').appendValue(ChronoField.MINUTE_OF_HOUR, 2).
-    optionalStart.appendLiteral(':').appendValue(ChronoField.SECOND_OF_MINUTE, 2).
+    optionalStart.appendLiteral('T').appendValue(ChronoField.HOUR_OF_DAY, 1, 2, SignStyle.NOT_NEGATIVE).
+    optionalStart.appendLiteral(':').appendValue(ChronoField.MINUTE_OF_HOUR, 1, 2, SignStyle.NOT_NEGATIVE).
+    optionalStart.appendLiteral(':').appendValue(ChronoField.SECOND_OF_MINUTE, 1, 2, SignStyle.NOT_NEGATIVE).
     optionalStart.appendLiteral('.').appendFraction(ChronoField.NANO_OF_SECOND, 1, 9, false).
     optionalEnd.optionalEnd.optionalEnd.optionalEnd.
     optionalStart.appendOffsetId.optionalEnd.
