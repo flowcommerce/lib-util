@@ -18,7 +18,7 @@ object Allocator {
     * (20, Seq(1, 1, 1), scale = 2) => Seq(6.67, 6.67, 6.66)
     * (10, Seq(50, 6), scale = -2) => Seq(10, 0)   // 50 * 10 / 56 = 8.928571429 and 6 * 10 / 56 = 1.071428571
     *
-    * @param amount the amount to prportionally allocate
+    * @param amount the amount to proportionally allocate
     * @param proportions the proportions use to allocate the given amount
     * @param scale the scale used to round the allocated amounts. None means no rounding.
     */
