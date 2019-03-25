@@ -9,7 +9,7 @@ class AllocatorSpec extends WordSpec with Matchers with GeneratorDrivenPropertyC
 
   private val elementGen: Gen[BigDecimal] = Gen.choose(1, 1000000).map(BigDecimal(_)/ 100)
   private val elementsGen: Gen[List[BigDecimal]] = Gen.nonEmptyListOf(elementGen)
-  private val amountGen: Gen[BigDecimal] = Gen.choose(1, 10000000).map(BigDecimal(_) / 100)
+  private val amountGen: Gen[BigDecimal] = Gen.choose(-10000000, 10000000).suchThat(_ != 0).map(BigDecimal(_) / 100)
   private val scaleGen: Gen[Int] = Gen.choose(-3, 3)
 
   "Allocator" should {
@@ -68,9 +68,50 @@ class AllocatorSpec extends WordSpec with Matchers with GeneratorDrivenPropertyC
       res shouldBe Seq(10, 0)
     }
 
-    "sum invariant" in {
+    "negative amount, positive proportions" in {
+      val elements: Seq[BigDecimal] = Seq(10, 10, 10)
+      val res = Allocator.proportionallyAllocate(-10, elements, scale = Some(2))
+      res shouldBe Seq(-3.34, -3.33, -3.33)
+    }
+
+    "positive amount, negative proportions" in {
+      val elements: Seq[BigDecimal] = Seq(-10, -10, -10)
+      val res = Allocator.proportionallyAllocate(10, elements, scale = Some(2))
+      res shouldBe Seq(3.34, 3.33, 3.33)
+    }
+
+    "negative amount, negative proportions" in {
+      val elements: Seq[BigDecimal] = Seq(-10, -10, 10)
+      val res = Allocator.proportionallyAllocate(-10, elements, scale = Some(2))
+      res shouldBe Seq(-3.34, -3.33, -3.33)
+    }
+
+    "negative amount, negative and positive proportions" in {
+      val elements: Seq[BigDecimal] = Seq(-10, 10, 10)
+      val res = Allocator.proportionallyAllocate(-10, elements, scale = Some(2))
+      res shouldBe Seq(-3.34, -3.33, -3.33)
+    }
+
+    "positive amount, negative and positive proportions" in {
+      val elements: Seq[BigDecimal] = Seq(-10, 10, 10)
+      val res = Allocator.proportionallyAllocate(10, elements, scale = Some(2))
+      res shouldBe Seq(3.34, 3.33, 3.33)
+    }
+
+    "0 amount invariant" in {
+      forAll(elementsGen, scaleGen, minSuccessful(10000)) { case (elements, scale) =>
+        val res = Allocator.proportionallyAllocate(0, elements, scale = Some(scale))
+        res.size shouldBe elements.size
+        res shouldBe Seq.fill(elements.size)(0)
+      }
+    }
+
+    "size, signum and sum invariant" in {
       forAll(amountGen, elementsGen, scaleGen, minSuccessful(10000)) { case (amount, elements, scale) =>
-        Allocator.proportionallyAllocate(amount, elements, scale = Some(scale)).sum shouldBe amount
+        val res = Allocator.proportionallyAllocate(amount, elements, scale = Some(scale))
+        res.size shouldBe elements.size
+        res.map(_.signum).distinct.filter(_ != 0) shouldBe Seq(amount.signum)
+        res.sum shouldBe amount
       }
     }
   }
