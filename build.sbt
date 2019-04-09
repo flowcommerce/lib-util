@@ -16,7 +16,7 @@ libraryDependencies ++= Seq(
   "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.1",
   "org.mockito" % "mockito-all" % "1.10.19" % Test,
   "org.scalatest" %% "scalatest" % "3.0.5" % Test,
-  compilerPlugin("com.github.ghik" %% "silencer-plugin" % "1.3.0"),
+  compilerPlugin("com.github.ghik" %% "silencer-plugin" % "1.3.1"),
   "org.scalacheck" %% "scalacheck" % "1.14.0" % Test,
   "com.github.ghik" %% "silencer-lib" % "1.3.0" % Provided
 )
