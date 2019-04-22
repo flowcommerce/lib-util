@@ -1,7 +1,7 @@
 name := "lib-util-javatime"
 organization := "io.flow"
 
-scalaVersion := "2.12.6"
+scalaVersion := "2.12.8"
 
 javacOptions in doc := Seq("-encoding", "UTF-8")
 
@@ -44,5 +44,4 @@ publishTo := {
   }
 }
 
-version := "0.1.18"
-version := "0.1.19"
+version := "0.1.20"
