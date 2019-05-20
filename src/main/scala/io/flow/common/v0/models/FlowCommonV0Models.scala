@@ -221,6 +221,13 @@ package io.flow.common.v0.models {
     address: _root_.scala.Option[io.flow.common.v0.models.BillingAddress] = None
   )
 
+  /**
+   * @param number Customer identification number as represented in the client's system
+   */
+  final case class CustomerReference(
+    number: String
+  )
+
   final case class DatetimeRange(
     from: _root_.org.joda.time.DateTime,
     to: _root_.org.joda.time.DateTime
