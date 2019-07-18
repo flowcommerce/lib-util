@@ -1,8 +1,11 @@
 package io.flow.util
 
-import org.scalatest.{MustMatchers, WordSpecLike}
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicInteger
+
 import org.scalatest.concurrent.Eventually.{eventually, timeout}
 import org.scalatest.time.{Seconds, Span}
+import org.scalatest.{MustMatchers, WordSpecLike}
 
 import scala.concurrent.duration._
 
@@ -10,30 +13,38 @@ class CacheWithFallbackToStaleDataSpec extends WordSpecLike with MustMatchers {
 
   private[this] case class TestCacheWithFallbackToStaleData[T]() extends CacheWithFallbackToStaleData[String, T] {
 
-    private[this] val data = scala.collection.mutable.Map[String, T]()
-    private[this] val nextValues = scala.collection.mutable.Map[String, T]()
-    var numberRefreshes: Int = 0
+    private[this] val data = new ConcurrentHashMap[String, T]()
+    private[this] val nextValues = new ConcurrentHashMap[String, T]()
+    private val refreshes = new AtomicInteger()
+
+    def numberRefreshes: Int = refreshes.intValue()
+
+    @volatile
     var refreshShouldFail = false
 
     override def refresh(key: String): T = {
       if (!refreshShouldFail) {
-        numberRefreshes += 1
-        data += key -> nextValues.getOrElse(
+        refreshes.incrementAndGet()
+        data.put(
           key,
-          data.getOrElse(key, sys.error(s"Missing test data for key[$key]"))
+          Option(nextValues.get(key))
+            .getOrElse(Option(data.get(key)).getOrElse(sys.error(s"0 - Missing test data for key[$key]")))
         )
       }
 
-      data.getOrElse(key, sys.error(s"Missing test data for key[$key]"))
+      Option(data.get(key)).getOrElse(sys.error(s"1 - Missing test data for key[$key]"))
     }
 
     def setNextValue(key: String, value: T): Unit = {
-      nextValues += (key -> value)
+      nextValues.put(key, value)
+      ()
     }
 
     def set(key: String, value: T): Unit = {
-      data += (key -> value)
+      data.put(key, value)
+      ()
     }
+
   }
 
   private[this] def eventuallyInNSeconds[T](n: Int)(f: => T): T = {
