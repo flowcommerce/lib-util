@@ -8,8 +8,10 @@ import org.scalatest.time.{Seconds, Span}
 import org.scalatest.{MustMatchers, WordSpecLike}
 
 import scala.concurrent.duration._
+import scala.concurrent.{Await, ExecutionContext, Future}
 
 class CacheWithFallbackToStaleDataSpec extends WordSpecLike with MustMatchers {
+  implicit val executionContext = ExecutionContext.global
 
   private[this] case class TestCacheWithFallbackToStaleData[T]() extends CacheWithFallbackToStaleData[String, T] {
 
@@ -21,10 +23,13 @@ class CacheWithFallbackToStaleDataSpec extends WordSpecLike with MustMatchers {
 
     @volatile
     var refreshShouldFail = false
+    @volatile
+    var refreshDelayMs = 0L
 
     override def refresh(key: String): T = {
       if (!refreshShouldFail) {
         refreshes.incrementAndGet()
+        Thread.sleep(refreshDelayMs)
         data.put(
           key,
           Option(nextValues.get(key))
@@ -144,6 +149,27 @@ class CacheWithFallbackToStaleDataSpec extends WordSpecLike with MustMatchers {
       cache.get("b") must equal(Some("foo"))
     }
     cache.get("a") must equal(Some("baz"))  // still cached
+  }
+
+  "Concurrent get should refresh only once" in {
+    val cache = TestCacheWithFallbackToStaleData[String]()
+    cache.setNextValue("a", "apple")
+    cache.refreshDelayMs = 500L
+
+    val get1 = Future { cache.get("a") }
+    val get2 = Future { cache.get("a") }
+    Await.result(get1, 1.second) must equal("apple")
+    Await.result(get2, 1.second) must equal("apple")
+    cache.numberRefreshes must be(1)
+
+    cache.flush("a")
+
+    cache.setNextValue("a", "pear")
+    val get3 = Future { cache.get("a") }
+    val get4 = Future { cache.get("a") }
+    Await.result(get3, 1.second) must equal("pear")
+    Await.result(get4, 1.second) must equal("pear")
+    cache.numberRefreshes must be(2)
   }
 
 }
