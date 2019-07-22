@@ -23,6 +23,7 @@ class CacheWithFallbackToStaleDataSpec extends WordSpecLike with MustMatchers {
 
     @volatile
     var refreshShouldFail = false
+    @volatile
     var refreshDelayMs = 0L
 
     override def refresh(key: String): T = {
