@@ -1,11 +1,10 @@
 package io.flow.util
 
 import org.scalacheck.Gen
-import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import org.scalatest.{Matchers, WordSpec}
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 
-
-class AllocatorSpec extends WordSpec with Matchers with GeneratorDrivenPropertyChecks {
+class AllocatorSpec extends WordSpec with Matchers with ScalaCheckDrivenPropertyChecks {
 
   private val elementGen: Gen[BigDecimal] = Gen.choose(1, 1000000).map(BigDecimal(_)/ 100)
   private val elementsGen: Gen[List[BigDecimal]] = Gen.nonEmptyListOf(elementGen)
