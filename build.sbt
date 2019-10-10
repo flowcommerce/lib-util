@@ -11,13 +11,13 @@ resolvers += "Artifactory" at "https://flow.jfrog.io/flow/libs-release/"
 
 libraryDependencies ++= Seq(
   "org.slf4j" % "slf4j-api" % "1.7.28",
-  "joda-time" % "joda-time" % "2.10.3", // This is temporary, should use java.time.*
+  "joda-time" % "joda-time" % "2.10.4", // This is temporary, should use java.time.*
   "org.scala-lang" % "scala-reflect" % scalaVersion.value,
   "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.2",
   "org.mockito" % "mockito-all" % "1.10.19" % Test,
   "org.scalatest" %% "scalatest" % "3.0.8" % Test,
   compilerPlugin("com.github.ghik" %% "silencer-plugin" % "1.4.2"),
-  "org.scalacheck" %% "scalacheck" % "1.14.0" % Test,
+  "org.scalacheck" %% "scalacheck" % "1.14.2" % Test,
   "com.github.ghik" %% "silencer-lib" % "1.4.2" % Provided
 )
 
