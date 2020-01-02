@@ -27,6 +27,17 @@ case class IdGenerator(prefix: String) {
   def randomId(): String =
     fromUuid(UUID.randomUUID)
 
+  /**
+   * Generates an uuid based on the specified bytes.
+   * This is a pure function: the same input produces the same output.
+   *
+   *  {{{
+   *  scala> val id1 = "exp-b476512e183944feb77126843ecb0271"
+   *  scala> val id2 = "itm-a9308bbbf5c3431bb2fd7c72c92d9d62"
+   *  scala> IdGenerator("tst").fromBytes((id1 + id2).getBytes)
+   *  res: String = tst-54622b3b58be361c93522bb9be6468a3
+   *  }}}
+   */
   def fromBytes(bytes: Array[Byte]): String =
     fromUuid(UUID.nameUUIDFromBytes(bytes))
 
