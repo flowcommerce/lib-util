@@ -24,8 +24,13 @@ case class IdGenerator(prefix: String) {
 
   private[this] val idFormat = Seq("%s", "%s").mkString(IdGenerator.Separator)
 
-  def randomId(): String = {
-    idFormat.format(prefix, UUID.randomUUID.toString.replaceAll("\\-", ""))
-  }
+  def randomId(): String =
+    fromUuid(UUID.randomUUID)
+
+  def fromBytes(bytes: Array[Byte]): String =
+    fromUuid(UUID.nameUUIDFromBytes(bytes))
+
+  private def fromUuid(uuid: UUID): String =
+    idFormat.format(prefix, uuid.toString.replaceAll("\\-", ""))
 
 }
