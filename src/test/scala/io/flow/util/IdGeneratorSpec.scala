@@ -43,7 +43,6 @@ class IdGeneratorSpec extends WordSpecLike with MustMatchers {
     val generator = IdGenerator("tst")
     val id = generator.fromBytes((id1 + id2).getBytes)
 
-    id.startsWith("tst-") mustBe true
     id mustBe "tst-54622b3b58be361c93522bb9be6468a3"
   }
 
