@@ -34,7 +34,7 @@ object DateHelper {
     optionalStart.appendLiteral('.').appendFraction(ChronoField.NANO_OF_SECOND, 1, 9, false).
     optionalEnd.optionalEnd.optionalEnd.optionalEnd.
     optionalStart.appendOffsetId.optionalEnd.
-//    optionalStart.appendLiteral('[').appendZoneId.appendLiteral(']').optionalEnd.
+    optionalStart.appendLiteral('[').appendZoneId.appendLiteral(']').optionalEnd.
     parseDefaulting(ChronoField.ERA, 1L).
     parseDefaulting(ChronoField.YEAR, 1970L).
     parseDefaulting(ChronoField.MONTH_OF_YEAR, 1L).
