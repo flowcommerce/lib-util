@@ -48,7 +48,7 @@ trait EnvironmentConfigLike extends Config {
 
   override def optionalList(name: String): Option[Seq[String]] = {
     get(name).map { text =>
-      text.split(",").map(_.trim)
+      text.split(",").map(_.trim).toSeq
     }
   }
 
@@ -96,14 +96,14 @@ trait EnvironmentConfigLike extends Config {
     /////////////////////////////////////////////////////
     //collecting matching keys and transforming the keys
     /////////////////////////////////////////////////////
-    val matchingKeys = source().filterKeys(_.startsWith(prefix))
+    val matchingKeys = source().filter { case (k, _) => k.startsWith(prefix) }
 
     val transformedMap = matchingKeys.map { case (key, value) =>
       (updateKey(key), value.split(",").map(_.trim).toList)
     }
 
-    if(transformedMap.isEmpty) None
-    else Some(transformedMap)
+    if (transformedMap.isEmpty) None
+    else Some(transformedMap.toMap)
   }
 }
 

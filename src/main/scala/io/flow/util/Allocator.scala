@@ -99,7 +99,13 @@ object Allocator {
         }
       }
 
-      val grouped = allocatedDeltas.groupBy { case (i, _) => i }.mapValues(_.head).mapValues { case (_, d) => d }
+      val grouped =
+        allocatedDeltas
+          .groupBy { case (i, _) => i }
+          .map { case (k, v) =>
+            val (_, d) = v.head
+            k -> d
+          }
 
       distances
         .map { case (r, _, i) => r + grouped.getOrElse(i, 0) }

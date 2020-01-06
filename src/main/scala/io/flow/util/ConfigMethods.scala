@@ -58,14 +58,14 @@ trait ConfigMethods { self: Config =>
   def requiredPositiveInt(name: String): Int = mustGet(name, optionalPositiveInt)
 
   def optionalFiniteDuration(name: String): Option[FiniteDuration] = {
-    def logAndFail(value: String)(cause: Throwable): Nothing = {
+    def logAndFail(value: String, cause: Throwable): Nothing = {
       val msg = s"FlowError Configuration variable[$name] has invalid value[$value]. Underlying cause: ${cause.getMessage}"
       logger.error(msg, cause)
       throw new RuntimeException(msg, cause)
     }
 
     optionalString(name).map { stringValue =>
-      duration.parse(stringValue).fold(logAndFail(stringValue), identity)
+      duration.parse(stringValue).fold(t => logAndFail(stringValue, t), identity)
     }
   }
 
@@ -95,7 +95,12 @@ private object ConfigMethods {
     private[duration] val pattern: Regex = """(\d+)\s+(\w+)""".r
 
     val parse: String => Try[FiniteDuration] = {
-      case duration.pattern(amount, unitString) => Try(FiniteDuration(amount.toLong, unitString))
+      case duration.pattern(amount, unitString) =>
+        Try(FiniteDuration(amount.toLong, unitString))
+          .recoverWith {
+            case _: NoSuchElementException => Failure(new NoSuchElementException(s"$unitString not supported"))
+          }
+
       case _ => Failure(new RuntimeException("Invalid pattern of FiniteDuration"))
     }
   }

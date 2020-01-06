@@ -169,7 +169,7 @@ class VersionParserSpec extends WordSpec with MustMatchers {
   }
 
   "can parse long ints" in {
-    VersionParser.parse("20131213005945") must be(Version("20131213005945", Seq(Tag.Date(20131213005945l, 0))))
+    VersionParser.parse("20131213005945") must be(Version("20131213005945", Seq(Tag.Date(20131213005945L, 0))))
   }
 
   "sorts developer tags before release tags (latest release tag must be last)" in {
