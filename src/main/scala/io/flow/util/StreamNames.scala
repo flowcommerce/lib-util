@@ -9,7 +9,7 @@ case class ApidocClass(
                         name: String
                       ) {
 
-  val namespaces: Seq[String] = service.split("\\.")
+  val namespaces: Seq[String] = service.split("\\.").toSeq
 
 }
 

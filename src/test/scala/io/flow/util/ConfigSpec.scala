@@ -60,7 +60,7 @@ class ConfigSpec extends WordSpec with MustMatchers with TryValues {
     "the field has an invalid unit" should {
       "fail" in {
         exceptionMessage("invalid-unit") mustBe
-          "FlowError Configuration variable[invalid-unit] has invalid value[5 years]. Underlying cause: key not found: years"
+          "FlowError Configuration variable[invalid-unit] has invalid value[5 years]. Underlying cause: years not supported"
       }
     }
 
