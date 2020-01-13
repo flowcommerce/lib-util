@@ -36,6 +36,16 @@ class IdGeneratorSpec extends WordSpecLike with MustMatchers {
     id.startsWith("tst-") must be(true)
   }
 
+  "uuid from bytes" in {
+    val id1 = "exp-b476512e183944feb77126843ecb0271"
+    val id2 = "itm-a9308bbbf5c3431bb2fd7c72c92d9d62"
+
+    val generator = IdGenerator("tst")
+    val id = generator.fromBytes((id1 + id2).getBytes)
+
+    id mustBe "tst-54622b3b58be361c93522bb9be6468a3"
+  }
+
   "randomId"in {
     val generator = IdGenerator("tst")
     val num = 10000
