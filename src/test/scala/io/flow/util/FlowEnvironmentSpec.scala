@@ -1,8 +1,9 @@
 package io.flow.util
 
-import org.scalatest.{MustMatchers, WordSpecLike}
+import org.scalatest.matchers.must.Matchers
+import org.scalatest.wordspec.AnyWordSpecLike
 
-class FlowEnvironmentSpec extends WordSpecLike with MustMatchers {
+class FlowEnvironmentSpec extends AnyWordSpecLike with Matchers {
 
   "fromString" in {
     FlowEnvironment.fromString("development") must be(Some(FlowEnvironment.Development))

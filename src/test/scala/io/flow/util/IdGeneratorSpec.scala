@@ -1,8 +1,9 @@
 package io.flow.util
 
-import org.scalatest.{MustMatchers, WordSpecLike}
+import org.scalatest.matchers.must.Matchers
+import org.scalatest.wordspec.AnyWordSpecLike
 
-class IdGeneratorSpec extends WordSpecLike with MustMatchers {
+class IdGeneratorSpec extends AnyWordSpecLike with Matchers {
 
   private[this] val MinimumRandomLength = 16
 

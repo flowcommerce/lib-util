@@ -1,10 +1,11 @@
 package io.flow.util
 
-import org.scalatest.{MustMatchers, WordSpecLike}
 
 import io.flow.util.test.v0.models.TestEvent
+import org.scalatest.matchers.must.Matchers
+import org.scalatest.wordspec.AnyWordSpecLike
 
-class StreamNamesSpec extends WordSpecLike with MustMatchers {
+class StreamNamesSpec extends AnyWordSpecLike with Matchers {
 
   private[this] val dev = StreamNames(FlowEnvironment.Development)
   private[this] val ws = StreamNames(FlowEnvironment.Workstation)
