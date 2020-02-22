@@ -1,10 +1,12 @@
 package io.flow.util
 
-import org.scalatest.{MustMatchers, TryValues, WordSpec}
+import org.scalatest.TryValues
 
 import scala.concurrent.duration._
+import org.scalatest.matchers.must.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-class ConfigSpec extends WordSpec with MustMatchers with TryValues {
+class ConfigSpec extends AnyWordSpec with Matchers with TryValues {
   def mockConfig(memory: (String, String)*): Config = new Config {
     val memoryMap: Map[String, String] = memory.toMap
 
@@ -84,7 +86,7 @@ class ConfigSpec extends WordSpec with MustMatchers with TryValues {
   }
 }
 
-class EnvironmentConfigLikeSpec extends WordSpec with MustMatchers {
+class EnvironmentConfigLikeSpec extends AnyWordSpec with Matchers {
   val mockConfig: Config = new EnvironmentConfigLike {
     override protected def sourceName: String = "mock"
 

@@ -1,8 +1,9 @@
 package io.flow.util
 
-import org.scalatest.{MustMatchers, WordSpecLike}
+import org.scalatest.matchers.must.Matchers
+import org.scalatest.wordspec.AnyWordSpecLike
 
-class BooleansSpec extends WordSpecLike with MustMatchers {
+class BooleansSpec extends AnyWordSpecLike with Matchers {
 
   "parse" in {
     Booleans.parse("") must be(None)

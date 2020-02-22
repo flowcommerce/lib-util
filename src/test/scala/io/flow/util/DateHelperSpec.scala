@@ -3,9 +3,10 @@ package io.flow.util
 import java.time.{Instant, LocalDate, OffsetDateTime, ZoneOffset, ZonedDateTime}
 import java.time.format.DateTimeFormatter
 
-import org.scalatest.{MustMatchers, WordSpecLike}
+import org.scalatest.matchers.must.Matchers
+import org.scalatest.wordspec.AnyWordSpecLike
 
-class DateHelperSpec extends WordSpecLike with MustMatchers {
+class DateHelperSpec extends AnyWordSpecLike with Matchers {
 
   private[this] val jan1OffsetDT: OffsetDateTime = OffsetDateTime.from(DateTimeFormatter.ISO_OFFSET_DATE_TIME.parse("2016-01-01T08:26:18.794-05:00"))
 

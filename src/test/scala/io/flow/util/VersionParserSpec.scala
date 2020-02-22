@@ -1,8 +1,9 @@
 package io.flow.util
 
-import org.scalatest.{MustMatchers, WordSpec}
+import org.scalatest.matchers.must.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-class VersionParserSpec extends WordSpec with MustMatchers {
+class VersionParserSpec extends AnyWordSpec with Matchers {
 
   "simple semver version numbers" in {
     VersionParser.parse("1") must be(Version("1", Seq(Tag.Semver(1, 0, 0))))

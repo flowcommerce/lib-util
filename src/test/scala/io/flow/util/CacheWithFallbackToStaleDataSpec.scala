@@ -5,12 +5,13 @@ import java.util.concurrent.atomic.AtomicInteger
 
 import org.scalatest.concurrent.Eventually.{eventually, timeout}
 import org.scalatest.time.{Seconds, Span}
-import org.scalatest.{MustMatchers, WordSpecLike}
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContext, Future}
+import org.scalatest.matchers.must.Matchers
+import org.scalatest.wordspec.AnyWordSpecLike
 
-class CacheWithFallbackToStaleDataSpec extends WordSpecLike with MustMatchers {
+class CacheWithFallbackToStaleDataSpec extends AnyWordSpecLike with Matchers {
   implicit val executionContext = ExecutionContext.global
 
   private[this] case class TestCacheWithFallbackToStaleData[T]() extends CacheWithFallbackToStaleData[String, T] {
