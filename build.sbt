@@ -1,9 +1,8 @@
 name := "lib-util"
+
 organization := "io.flow"
 
 scalaVersion := "2.13.1"
-
-crossScalaVersions := Seq("2.12.10", "2.13.1")
 
 javacOptions in doc := Seq("-encoding", "UTF-8")
 
@@ -12,12 +11,12 @@ licenses += ("MIT", url("http://opensource.org/licenses/MIT"))
 resolvers += "Artifactory" at "https://flow.jfrog.io/flow/libs-release/"
 
 libraryDependencies ++= Seq(
-  "org.slf4j" % "slf4j-api" % "1.7.30",
   "joda-time" % "joda-time" % "2.10.5", // This is temporary, should use java.time.*
+  "org.slf4j" % "slf4j-api" % "1.7.30",
   "org.joda" % "joda-convert" % "2.2.1",
   "org.scala-lang" % "scala-reflect" % scalaVersion.value,
   "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.2",
-  "org.mockito" % "mockito-all" % "1.10.19" % Test,
+  "org.mockito" % "mockito-scala_2.13" % "1.11.3" % Test,
   "org.scalatest" %% "scalatest" % "3.1.0" % Test,
   "org.scalacheck" %% "scalacheck" % "1.14.3" % Test,
   "org.scalatestplus" %% "scalacheck-1-14" % "3.1.1.1" % Test,
