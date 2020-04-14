@@ -43,6 +43,13 @@ object Allocator {
     case Some(s) => proportionallyAllocateRound(amount, proportions, s)
   }
 
+  def proportionallyAllocateInts(
+    amount: Int,
+    proportions: Seq[BigDecimal],
+  ): Seq[Int] = {
+    proportionallyAllocateRound(amount, proportions, scale = 0).map(_.intValue)
+  }
+
   /**
     * @see [[proportionallyAllocate]]
     */

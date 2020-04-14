@@ -10,6 +10,7 @@ class AllocatorSpec extends AnyWordSpec with Matchers with ScalaCheckDrivenPrope
   private val elementGen: Gen[BigDecimal] = Gen.choose(1, 1000000).map(BigDecimal(_)/ 100)
   private val elementsGen: Gen[List[BigDecimal]] = Gen.nonEmptyListOf(elementGen)
   private val amountGen: Gen[BigDecimal] = Gen.choose(-10000000, 10000000).suchThat(_ != 0).map(BigDecimal(_) / 100)
+  private val amountIntGen: Gen[Int] = Gen.choose(-10000000, 10000000).suchThat(_ != 0)
   private val scaleGen: Gen[Int] = Gen.choose(-3, 3)
 
   "Allocator" should {
@@ -113,6 +114,22 @@ class AllocatorSpec extends AnyWordSpec with Matchers with ScalaCheckDrivenPrope
         res.map(_.signum).distinct.filter(_ != 0) shouldBe Seq(amount.signum)
         res.sum shouldBe amount
       }
+    }
+
+    "size, sum invariant for ints" in {
+      forAll(amountIntGen, elementsGen, minSuccessful(10000)) { case (amount, elements) =>
+        val res = Allocator.proportionallyAllocateInts(amount, elements)
+        res.size shouldBe elements.size
+        res.sum shouldBe amount
+      }
+    }
+
+    "proportionallyAllocateInts" in {
+      def test(proportions: Seq[BigDecimal]) = Allocator.proportionallyAllocateInts(100, proportions)
+
+      test(Seq(1, 1)) shouldBe Seq(50, 50)
+      test(Seq(1, 1, 1)) shouldBe Seq(34, 33, 33)
+      test(Seq(1, 2)) shouldBe Seq(33, 67)
     }
   }
 }
