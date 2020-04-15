@@ -47,7 +47,7 @@ case class Version(value: String, tags: Seq[Tag]) extends Ordered[Version] {
     * Note that we want to make sure that the simple semver versions
     * sort highest - thus if we have exactly one tag that is semver,
     * bump up its priority. This allows for 1.0.0 to sort
-    * about 1.0.0-dev (as one example). General strategy in the sort
+    * before 1.0.0-dev (as one example). General strategy in the sort
     * key is to append a high padding that includes the number of
     * remaining elements (which naturally favors shorter version
     * numbers).
@@ -75,7 +75,7 @@ case class Version(value: String, tags: Seq[Tag]) extends Ordered[Version] {
     }.mkString(",")
   }
 
-  def compare(that: Version) = {
+  def compare(that: Version): Int = {
     sortKey.compare(that.sortKey)
   }
 }
@@ -100,7 +100,7 @@ sealed trait Tag extends Ordered[Tag] {
     */
   val sortKey: String
 
-  def compare(that: Tag) = {
+  def compare(that: Tag): Int = {
     sortKey.compare(that.sortKey)
   }
 
@@ -184,7 +184,7 @@ class VersionParser extends RegexParsers {
   def number: Parser[Long] = """[0-9]+""".r ^^ { _.toLong }
   def text: Parser[Tag.Text] = """[a-zA-Z]+""".r ^^ { case value => Tag.Text(value.toString) }
   def dot: Parser[String] = """\.""".r ^^ { _.toString }
-  def divider: Parser[String] = """[\.\_\-]+""".r ^^ { _.toString }
+  def divider: Parser[String] = """[\.\_\-\+]+""".r ^^ { _.toString }
   def semver: Parser[Tag] = rep1sep(number, dot) ^^ {
     case Nil => {
       Tag.Semver(0, 0, 0)

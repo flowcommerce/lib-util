@@ -5,19 +5,27 @@ import org.scalatest.wordspec.AnyWordSpec
 
 class VersionParserSpec extends AnyWordSpec with Matchers {
 
+  import VersionParser.parse
+
   "simple semver version numbers" in {
-    VersionParser.parse("1") must be(Version("1", Seq(Tag.Semver(1, 0, 0))))
-    VersionParser.parse("1.0") must be(Version("1.0", Seq(Tag.Semver(1, 0, 0))))
-    VersionParser.parse("1.0.0") must be(Version("1.0.0", Seq(Tag.Semver(1, 0, 0))))
-    VersionParser.parse("1.2.3") must be(Version("1.2.3", Seq(Tag.Semver(1, 2, 3))))
-    VersionParser.parse("r1.2.3") must be(Version("r1.2.3", Seq(Tag.Semver(1, 2, 3))))
-    VersionParser.parse("V1.2.3") must be(Version("V1.2.3", Seq(Tag.Semver(1, 2, 3))))
-    VersionParser.parse("experimental1.2.3") must be(Version("experimental1.2.3", Seq(Tag.Text("experimental"), Tag.Semver(1, 2, 3))))
-    VersionParser.parse("1.2.3.4") must be(Version("1.2.3.4", Seq(Tag.Semver(1, 2, 3, Seq(4)))))
-    VersionParser.parse("dev") must be(Version("dev", Seq(Tag.Text("dev"))))
-    VersionParser.parse("1.0.0-dev") must be(Version("1.0.0-dev", Seq(Tag.Semver(1, 0, 0), Tag.Text("dev"))))
-    VersionParser.parse("1.0.0_dev") must be(Version("1.0.0_dev", Seq(Tag.Semver(1, 0, 0), Tag.Text("dev"))))
-    VersionParser.parse("1.0.0.dev") must be(Version("1.0.0.dev", Seq(Tag.Semver(1, 0, 0), Tag.Text("dev"))))
+  parse("1") must be(Version("1", Seq(Tag.Semver(1, 0, 0))))
+  parse("1.0") must be(Version("1.0", Seq(Tag.Semver(1, 0, 0))))
+  parse("1.0.0") must be(Version("1.0.0", Seq(Tag.Semver(1, 0, 0))))
+  parse("1.2.3") must be(Version("1.2.3", Seq(Tag.Semver(1, 2, 3))))
+  parse("r1.2.3") must be(Version("r1.2.3", Seq(Tag.Semver(1, 2, 3))))
+  parse("V1.2.3") must be(Version("V1.2.3", Seq(Tag.Semver(1, 2, 3))))
+  parse("experimental1.2.3") must be(Version("experimental1.2.3", Seq(Tag.Text("experimental"), Tag.Semver(1, 2, 3))))
+  parse("1.2.3.4") must be(Version("1.2.3.4", Seq(Tag.Semver(1, 2, 3, Seq(4)))))
+  parse("dev") must be(Version("dev", Seq(Tag.Text("dev"))))
+  parse("1.0.0-dev") must be(Version("1.0.0-dev", Seq(Tag.Semver(1, 0, 0), Tag.Text("dev"))))
+  parse("1.0.0_dev") must be(Version("1.0.0_dev", Seq(Tag.Semver(1, 0, 0), Tag.Text("dev"))))
+  parse("1.0.0.dev") must be(Version("1.0.0.dev", Seq(Tag.Semver(1, 0, 0), Tag.Text("dev"))))
+  }
+
+  "semver with hash" in {
+    parse("2.1.0+ab") must be(
+      Version("2.1.0+ab", Seq(Tag.Semver(2, 1, 0), Tag.Text("ab")))
+    )
   }
 
   "isDate" in {
@@ -28,15 +36,15 @@ class VersionParserSpec extends AnyWordSpec with Matchers {
   }
 
   "date version numbers" in {
-    VersionParser.parse("123") must be(Version("123", Seq(Tag.Semver(123, 0, 0))))
-    VersionParser.parse("20141018") must be(Version("20141018", Seq(Tag.Date(20141018, 0))))
-    VersionParser.parse("20141018.1") must be(Version("20141018.1", Seq(Tag.Date(20141018, 1))))
-    VersionParser.parse("r20141018.1") must be(Version("r20141018.1", Seq(Tag.Date(20141018, 1))))
-    VersionParser.parse("10141018") must be(Version("10141018", Seq(Tag.Semver(10141018, 0, 0))))
+  parse("123") must be(Version("123", Seq(Tag.Semver(123, 0, 0))))
+  parse("20141018") must be(Version("20141018", Seq(Tag.Date(20141018, 0))))
+  parse("20141018.1") must be(Version("20141018.1", Seq(Tag.Date(20141018, 1))))
+  parse("r20141018.1") must be(Version("r20141018.1", Seq(Tag.Date(20141018, 1))))
+  parse("10141018") must be(Version("10141018", Seq(Tag.Semver(10141018, 0, 0))))
   }
 
   "postgresql version" in {
-    VersionParser.parse("9.4-1201-jdbc41") must be(
+  parse("9.4-1201-jdbc41") must be(
       Version(
         "9.4-1201-jdbc41",
         Seq(
@@ -47,11 +55,11 @@ class VersionParserSpec extends AnyWordSpec with Matchers {
         )
       )
     )
-    VersionParser.parse("42.1.3") > VersionParser.parse("9.4.1212") must be(true)
+  parse("42.1.3") > VersionParser.parse("9.4.1212") must be(true)
   }
 
   "separated text from numbers" in {
-    VersionParser.parse("1.4.0-M4") must be(
+  parse("1.4.0-M4") must be(
       Version(
         "1.4.0-M4",
         Seq(
@@ -64,7 +72,7 @@ class VersionParserSpec extends AnyWordSpec with Matchers {
   }
 
   "scala lang versions" in {
-    VersionParser.parse("2.9.1.final") must be(
+  parse("2.9.1.final") must be(
       Version(
         "2.9.1.final",
         Seq(
@@ -76,14 +84,14 @@ class VersionParserSpec extends AnyWordSpec with Matchers {
   }
 
   "sortKey" in {
-    VersionParser.parse("TEST").sortKey must be("20.test.99999")
-    VersionParser.parse("r20141211.1").sortKey must be("40.20141211.10001.99999")
-    VersionParser.parse("1.2.3").sortKey must be("60.10001.10002.10003.99999")
-    VersionParser.parse("r1.2.3").sortKey must be("60.10001.10002.10003.99999")
-    VersionParser.parse("1.2.3.4").sortKey must be("60.10001.10002.10003.10004.99999")
+  parse("TEST").sortKey must be("20.test.99999")
+  parse("r20141211.1").sortKey must be("40.20141211.10001.99999")
+  parse("1.2.3").sortKey must be("60.10001.10002.10003.99999")
+  parse("r1.2.3").sortKey must be("60.10001.10002.10003.99999")
+  parse("1.2.3.4").sortKey must be("60.10001.10002.10003.10004.99999")
 
-    VersionParser.parse("1.0.0").sortKey must be("60.10001.10000.10000.99999")
-    VersionParser.parse("1.0.0-g-1").sortKey must be("60.10001.10000.10000.99998,20.g.99998,60.10001.10000.10000.99998")
+  parse("1.0.0").sortKey must be("60.10001.10000.10000.99999")
+  parse("1.0.0-g-1").sortKey must be("60.10001.10000.10000.99998,20.g.99998,60.10001.10000.10000.99998")
   }
 
   "sorts 1 element version" in {
@@ -136,41 +144,41 @@ class VersionParserSpec extends AnyWordSpec with Matchers {
   }
 
   "parses major from semver versions" in {
-    VersionParser.parse("0.0.0").major must be(Some(0))
-    VersionParser.parse("0.0.0").major must be(Some(0))
-    VersionParser.parse("0.0.0-dev").major must be(Some(0))
+  parse("0.0.0").major must be(Some(0))
+  parse("0.0.0").major must be(Some(0))
+  parse("0.0.0-dev").major must be(Some(0))
 
-    VersionParser.parse("1.0.0").major must be(Some(1))
-    VersionParser.parse("1.0.0-dev").major must be(Some(1))
+  parse("1.0.0").major must be(Some(1))
+  parse("1.0.0-dev").major must be(Some(1))
   }
 
   "parses major from github versions" in {
-    VersionParser.parse("v1").major must be(Some(1))
-    VersionParser.parse("v1.0.0").major must be(Some(1))
-    VersionParser.parse("v1.0.0-dev").major must be(Some(1))
+  parse("v1").major must be(Some(1))
+  parse("v1.0.0").major must be(Some(1))
+  parse("v1.0.0-dev").major must be(Some(1))
   }
 
   "returns none when no major number" in {
-    VersionParser.parse("v").major must be(None)
-    VersionParser.parse("dev").major must be(None)
+  parse("v").major must be(None)
+  parse("dev").major must be(None)
   }
 
   "major ignores whitespace" in {
-    VersionParser.parse(" 1.0").major must be(Some(1))
-    VersionParser.parse(" v2.0").major must be(Some(2))
+  parse(" 1.0").major must be(Some(1))
+  parse(" v2.0").major must be(Some(2))
   }
 
   "nextMicro" in {
-    VersionParser.parse("foo").nextMicro must be(None)
-    VersionParser.parse("foo-bar").nextMicro must be(None)
-    VersionParser.parse("foo-0.1.2").nextMicro must be(Some(Version("foo-0.1.3", Seq(Tag.Text("foo"), Tag.Semver(0, 1, 3)))))
-    VersionParser.parse("0.0.1").nextMicro.map(_.value) must be(Some("0.0.2"))
-    VersionParser.parse("1.2.3").nextMicro.map(_.value) must be(Some("1.2.4"))
-    VersionParser.parse("0.0.5-dev").nextMicro.map(_.value) must be(Some("0.0.6-dev"))
+  parse("foo").nextMicro must be(None)
+  parse("foo-bar").nextMicro must be(None)
+  parse("foo-0.1.2").nextMicro must be(Some(Version("foo-0.1.3", Seq(Tag.Text("foo"), Tag.Semver(0, 1, 3)))))
+  parse("0.0.1").nextMicro.map(_.value) must be(Some("0.0.2"))
+  parse("1.2.3").nextMicro.map(_.value) must be(Some("1.2.4"))
+  parse("0.0.5-dev").nextMicro.map(_.value) must be(Some("0.0.6-dev"))
   }
 
   "can parse long ints" in {
-    VersionParser.parse("20131213005945") must be(Version("20131213005945", Seq(Tag.Date(20131213005945L, 0))))
+  parse("20131213005945") must be(Version("20131213005945", Seq(Tag.Date(20131213005945L, 0))))
   }
 
   "sorts developer tags before release tags (latest release tag must be last)" in {
