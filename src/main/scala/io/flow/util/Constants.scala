@@ -11,6 +11,7 @@ object Constants {
 
   object Prefixes {
     val Session = "F51"
+    val GlobalKey = "global"
   }
 
 }

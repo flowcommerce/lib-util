@@ -23,9 +23,13 @@ case class IdGenerator(prefix: String) {
   assert(!BadWords.contains(prefix), s"prefix[$prefix] is on the black list and cannot be used")
 
   private[this] val idFormat = Seq("%s", "%s").mkString(IdGenerator.Separator)
+  private[this] val idPattern = s"$prefix${IdGenerator.Separator}[0-9a-f]{32}".r
 
   def randomId(): String =
     fromUuid(UUID.randomUUID)
+
+  def validate(id: String): Boolean =
+    idPattern.matches(id)
 
   /**
    * Generates an uuid based on the specified bytes.
