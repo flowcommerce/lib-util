@@ -2,7 +2,7 @@ name := "lib-util"
 
 organization := "io.flow"
 
-scalaVersion := "2.13.1"
+scalaVersion := "2.13.2"
 
 javacOptions in doc := Seq("-encoding", "UTF-8")
 
