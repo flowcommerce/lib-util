@@ -70,4 +70,18 @@ class IdGeneratorSpec extends AnyWordSpecLike with Matchers {
     }
   }
 
+  "validate" in {
+    val generator = IdGenerator("tst")
+    generator.validate(generator.randomId()) mustBe true
+    generator.validate(generator.randomId().replace("-", "_")) mustBe false
+    generator.validate(s"x${generator.randomId()}") mustBe false
+    generator.validate(s"${generator.randomId()}g") mustBe false
+    generator.validate(generator.randomId().tail) mustBe false
+    generator.validate(generator.randomId().init) mustBe false
+    generator.validate(generator.randomId().init) mustBe false
+    generator.validate(s"x${generator.randomId().tail}") mustBe false
+    generator.validate(s"${generator.randomId().init}g") mustBe false
+    generator.validate("") mustBe false
+    generator.validate(generator.randomId() + generator.randomId()) mustBe false
+  }
 }
