@@ -173,4 +173,23 @@ class CacheWithFallbackToStaleDataSpec extends AnyWordSpecLike with Matchers {
     cache.numberRefreshes must be(2)
   }
 
+  "safeGet" in {
+    val cache = TestCacheWithFallbackToStaleData[String]()
+    an[Exception] must be thrownBy cache.get("a")
+
+    noException must be thrownBy cache.safeGet("a")
+    cache.safeGet("a").isFailure mustBe true
+  }
+
+  "getOrElse" in {
+    val cache = TestCacheWithFallbackToStaleData[String]()
+    an[Exception] must be thrownBy cache.get("a")
+
+    noException must be thrownBy cache.getOrElse("a", "default")
+    cache.getOrElse("a", "default") mustBe "default"
+
+    cache.set("b", "nonDefault")
+    cache.getOrElse("b", "default") mustBe "nonDefault"
+  }
+
 }

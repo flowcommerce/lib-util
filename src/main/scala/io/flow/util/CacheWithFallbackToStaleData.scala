@@ -6,7 +6,6 @@ import java.time.temporal.ChronoField
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.duration._
-import scala.util.control.NonFatal
 import scala.util.{Failure, Success, Try}
 
 private[util] case class CacheEntry[V](value: V, expiresAt: ZonedDateTime) {
@@ -104,7 +103,7 @@ trait CacheWithFallbackToStaleData[K, V] {
   def safeGet(key: K): Try[V] = Try(get(key))
 
   /**
-   * Returns the `default` value if the underlying call to [[get]] returns an exception
+   * Returns the `default` value if the underlying call to [[get]] throws an exception
    */
   def getOrElse(key: K, default: => V): V = safeGet(key).getOrElse(default)
 
