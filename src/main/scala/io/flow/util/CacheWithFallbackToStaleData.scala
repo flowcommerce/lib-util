@@ -18,7 +18,7 @@ private[util] case class CacheEntry[V](value: V, expiresAt: ZonedDateTime) {
   * Caches data for a short period of time (configurable, defaults to 1 minute)
   *
   * Refreshes data on demand (when you call `get`, if entry is not in cache
-  * executes the refresh function then). If the call to `get` failes, and
+  * executes the refresh function then). If the call to `get` fails, and
   * and there is data cached in memory, you will get back the stale data.
   */
 trait CacheWithFallbackToStaleData[K, V] {
@@ -49,6 +49,14 @@ trait CacheWithFallbackToStaleData[K, V] {
   private[this] lazy val durationSeconds = duration.toSeconds
   private[this] lazy val durationForNoneSeconds = durationForNone.toSeconds
 
+  /**
+   * Indicates how to fetch the value for a given key.
+   * This function is called when the key is not cached or the value has expired.
+   *
+   * If the function throws an exception and there is a value in the cache, this stale value will be returned.
+   * Otherwise the exception is thrown and must be handled.
+   * @see [[safeGet]] and [[getOrElse]]
+   */
   def refresh(key: K): V
 
   /**
@@ -62,6 +70,9 @@ trait CacheWithFallbackToStaleData[K, V] {
     ()
   }
 
+  /**
+   * If [[refresh]] may throw an exception when the cache is empty, use [[safeGet]] or [[getOrElse]]
+   */
   def get(key: K): V = {
     // try to do a quick get first
     val finalEntry = Option(cache.get(key)) match {
@@ -84,6 +95,17 @@ trait CacheWithFallbackToStaleData[K, V] {
     }
     finalEntry.value
   }
+
+  /**
+   * Use instead of [[get]] if [[refresh]] may throw an exception.
+   * @see [[getOrElse]] to return a default value
+   */
+  def safeGet(key: K): Try[V] = Try(get(key))
+
+  /**
+   * Returns the `default` value if the underlying call to [[get]] throws an exception
+   */
+  def getOrElse(key: K, default: => V): V = safeGet(key).getOrElse(default)
 
   private[this] def failureFromEmpty(key: K, ex: Throwable): CacheEntry[V] = {
     val msg = s"FlowError for Cache[${this.getClass.getName}] key[$key]: ${ex.getMessage}"
