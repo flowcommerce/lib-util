@@ -19,7 +19,7 @@ libraryDependencies ++= Seq(
   "org.mockito" % "mockito-scala_2.13" % "1.11.3" % Test,
   "org.scalatest" %% "scalatest" % "3.1.2" % Test,
   "org.scalacheck" %% "scalacheck" % "1.14.3" % Test,
-  "org.scalatestplus" %% "scalacheck-1-14" % "3.1.2.0" % Test,
+  "org.scalatestplus" %% "scalacheck-1-14" % "3.2.0.0" % Test,
   compilerPlugin("com.github.ghik" %% "silencer-plugin" % "1.6.0" cross CrossVersion.full),
   "com.github.ghik" %% "silencer-lib" % "1.6.0" % Provided cross CrossVersion.full,
 )
