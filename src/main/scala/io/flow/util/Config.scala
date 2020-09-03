@@ -86,7 +86,7 @@ trait EnvironmentConfigLike extends Config {
     //functions transforming the keys
     //////////////////////////////////
     val stripKey: String => String = _.drop(prefix.length)
-    val underscoresAsDots: String => String = _.replaceAllLiterally("_", ".")
+    val underscoresAsDots: String => String = _.replace("_", ".")
 
     val updateKey: String => String =
       stripKey andThen

@@ -169,12 +169,12 @@ class VersionParserSpec extends AnyWordSpec with Matchers {
   }
 
   "nextMicro" in {
-  parse("foo").nextMicro must be(None)
-  parse("foo-bar").nextMicro must be(None)
-  parse("foo-0.1.2").nextMicro must be(Some(Version("foo-0.1.3", Seq(Tag.Text("foo"), Tag.Semver(0, 1, 3)))))
-  parse("0.0.1").nextMicro.map(_.value) must be(Some("0.0.2"))
-  parse("1.2.3").nextMicro.map(_.value) must be(Some("1.2.4"))
-  parse("0.0.5-dev").nextMicro.map(_.value) must be(Some("0.0.6-dev"))
+  parse("foo").nextMicro() must be(None)
+  parse("foo-bar").nextMicro() must be(None)
+  parse("foo-0.1.2").nextMicro() must be(Some(Version("foo-0.1.3", Seq(Tag.Text("foo"), Tag.Semver(0, 1, 3)))))
+  parse("0.0.1").nextMicro().map(_.value) must be(Some("0.0.2"))
+  parse("1.2.3").nextMicro().map(_.value) must be(Some("1.2.4"))
+  parse("0.0.5-dev").nextMicro().map(_.value) must be(Some("0.0.6-dev"))
   }
 
   "can parse long ints" in {
