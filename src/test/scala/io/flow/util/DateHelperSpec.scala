@@ -174,7 +174,7 @@ class DateHelperSpec extends AnyWordSpecLike with Matchers {
     }
 
     "copyrightYear" in {
-      Seq(DateHelper.copyrightYears) must contain( oneOf ("2016", s"2016 - ${DateHelper.currentYear}"))
+      DateHelper.copyrightYears must be( oneOf ("2016", s"2016 - ${DateHelper.currentYear}"))
     }
   }
 
