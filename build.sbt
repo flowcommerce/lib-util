@@ -11,7 +11,7 @@ licenses += ("MIT", url("http://opensource.org/licenses/MIT"))
 resolvers += "Artifactory" at "https://flow.jfrog.io/flow/libs-release/"
 
 libraryDependencies ++= Seq(
-  "joda-time" % "joda-time" % "2.10.9", // This is temporary, should use java.time.*
+  "joda-time" % "joda-time" % "2.10.10", // This is temporary, should use java.time.*
   "org.slf4j" % "slf4j-api" % "1.7.30",
   "org.joda" % "joda-convert" % "2.2.1",
   "org.scala-lang" % "scala-reflect" % scalaVersion.value,
