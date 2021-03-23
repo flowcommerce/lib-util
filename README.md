@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/flowcommerce/lib-util.svg?branch=master)](https://travis-ci.com/flowcommerce/lib-util)
+[![Build Status](https://travis-ci.org/flowcommerce/lib-util.svg?branch=main)](https://travis-ci.com/flowcommerce/lib-util)
 
 # lib-util
 
