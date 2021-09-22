@@ -1038,13 +1038,15 @@ package io.flow.common.v0.models {
      */
     case object StripTrailingZeros extends CurrencyLabelFormatter { override def toString = "strip_trailing_zeros" }
     /**
-     * if currency symbol to be placed before the amount
+     * Indicates that a currency symbol should appear as a prefix to the price label.
+     * e.g $100
      */
-    case object BeforeAmount extends CurrencyLabelFormatter { override def toString = "before_amount" }
+    case object SymbolPrefix extends CurrencyLabelFormatter { override def toString = "symbol_prefix" }
     /**
-     * if currency symbol to be placed after the amount
+     * Indicates that a currency symbol should appear as a suffix to the price label.
+     * e.g 100 $
      */
-    case object AfterAmount extends CurrencyLabelFormatter { override def toString = "after_amount" }
+    case object SymbolSuffix extends CurrencyLabelFormatter { override def toString = "symbol_suffix" }
 
     /**
      * UNDEFINED captures values that are sent either in error or
@@ -1062,7 +1064,7 @@ package io.flow.common.v0.models {
      * lower case to avoid collisions with the camel cased values
      * above.
      */
-    val all: scala.List[CurrencyLabelFormatter] = scala.List(StripTrailingZeros, BeforeAmount, AfterAmount)
+    val all: scala.List[CurrencyLabelFormatter] = scala.List(StripTrailingZeros, SymbolPrefix, SymbolSuffix)
 
     private[this]
     val byName: Map[String, CurrencyLabelFormatter] = all.map(x => x.toString.toLowerCase -> x).toMap
