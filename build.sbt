@@ -21,6 +21,8 @@ licenses += ("MIT", url("http://opensource.org/licenses/MIT"))
 
 resolvers += "Artifactory" at "https://flow.jfrog.io/flow/libs-release/"
 
+enablePlugins(JmhPlugin)
+
 libraryDependencies ++= Seq(
   "joda-time" % "joda-time" % "2.10.13", // This is temporary, should use java.time.*
   "org.slf4j" % "slf4j-api" % "1.7.32",
