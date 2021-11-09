@@ -22,7 +22,6 @@ case class IdGenerator(prefix: String) {
   assert(prefix.length == IdGenerator.PrefixLength, s"prefix[$prefix] must be ${IdGenerator.PrefixLength} characters long")
   assert(!BadWords.contains(prefix), s"prefix[$prefix] is on the black list and cannot be used")
 
-  private[this] val idFormat = Seq("%s", "%s").mkString(IdGenerator.Separator)
   private[this] val idPattern = s"$prefix${IdGenerator.Separator}[0-9a-f]{32}".r
 
   def randomId(): String =
@@ -45,7 +44,9 @@ case class IdGenerator(prefix: String) {
   def fromBytes(bytes: Array[Byte]): String =
     fromUuid(UUID.nameUUIDFromBytes(bytes))
 
-  private def fromUuid(uuid: UUID): String =
-    idFormat.format(prefix, uuid.toString.replaceAll("\\-", ""))
+  private def fromUuid(uuid: UUID): String = {
+    val init = new StringBuilder(37, prefix + IdGenerator.Separator)
+    uuid.toString.foldLeft(init) { case (sb, c) => if (c != '-') sb.addOne(c) else sb }.toString
+  }
 
 }
