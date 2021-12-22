@@ -24,7 +24,7 @@ resolvers += "Artifactory" at "https://flow.jfrog.io/flow/libs-release/"
 libraryDependencies ++= Seq(
   "joda-time" % "joda-time" % "2.10.13", // This is temporary, should use java.time.*
   "org.slf4j" % "slf4j-api" % "1.7.32",
-  "org.joda" % "joda-convert" % "2.2.1",
+  "org.joda" % "joda-convert" % "2.2.2",
   "org.scala-lang" % "scala-reflect" % scalaVersion.value,
   "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.2",
   "org.mockito" % "mockito-scala_2.13" % "1.11.3" % Test,
