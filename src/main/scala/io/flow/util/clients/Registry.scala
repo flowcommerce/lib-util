@@ -63,6 +63,15 @@ object RegistryConstants {
     s"https://$applicationId.$ProductionDomain"
   }
 
+  /**
+   * Returns the hostname of the specified application in the
+   * kubernetes production cluster environment.
+   */
+  def k8sProductionHost(applicationId: String): String = applicationId match {
+    case "payment" => s"https://$applicationId.$ProductionDomain"
+    case _         => s"http://$applicationId"
+  }
+
   def developmentHost(port: Long): String = {
     s"http://$devHost:$port"
   }
@@ -85,13 +94,19 @@ object RegistryConstants {
   * Production works by convention with no external dependencies.
   */
 class ProductionRegistry() extends Registry {
-
   override def host(applicationId: String): String = {
     val host = RegistryConstants.productionHost(applicationId)
     RegistryConstants.log("Production", applicationId, s"Host[$host]")
     host
   }
+}
 
+class K8sProductionRegistry() extends Registry {
+  override def host(applicationId: String): String = {
+    val host = RegistryConstants.k8sProductionHost(applicationId)
+    RegistryConstants.log("Kubernetes Production", applicationId, s"Host[$host]")
+    host
+  }
 }
 
 class MockRegistry() extends Registry {
