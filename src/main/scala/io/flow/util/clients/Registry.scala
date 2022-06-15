@@ -30,7 +30,12 @@ trait Registry {
 
 }
 
+private[clients] object RegistryEC {
+  implicit val ec = ExecutionContext.fromExecutor(Executors.newWorkStealingPool())
+}
+
 trait RegistryConstants {
+  import RegistryEC._
 
   private val logger: Logger = LoggerFactory.getLogger(getClass)
 
@@ -66,7 +71,9 @@ trait RegistryConstants {
     * production environment.
     */
   def productionHost(applicationId: String): String = {
-    s"https://$applicationId.$ProductionDomain"
+    Try {
+      Await.result(asyncDnsLookupByName(applicationId), 100.millis)
+    }.fold(_ => s"https://$applicationId.$ProductionDomain", _ => s"http://$applicationId")
   }
 
   def developmentHost(port: Long): String = {
@@ -84,6 +91,10 @@ trait RegistryConstants {
       case FlowEnvironment.Workstation => workstationHost(port)
     }
   }
+
+  protected def asyncDnsLookupByName(name: String): Future[Unit] = {
+    Future { InetAddress.getByName(name) }.map(_ => ())
+  }
 }
 
 object RegistryConstants extends RegistryConstants
@@ -92,20 +103,12 @@ object RegistryConstants extends RegistryConstants
   * Production works by convention with no external dependencies.
   */
 class ProductionRegistry() extends Registry with RegistryConstants {
-  implicit private[clients] val ec = ExecutionContext.fromExecutor(Executors.newSingleThreadExecutor)
-
   override def host(applicationId: String): String = {
-    val host = Try {
-      Await.result(asyncDnsLookupByName(applicationId), 100.millis)
-    }.fold(_ => productionHost(applicationId), _ => s"http://$applicationId")
-
+    val host = productionHost(applicationId)
     log("Production", applicationId, s"Host[$host]")
-
     host
   }
 
-  protected def asyncDnsLookupByName(name: String): Future[Unit] =
-    Future { InetAddress.getByName(name) }.map(_ => ())
 }
 
 class MockRegistry() extends Registry {
