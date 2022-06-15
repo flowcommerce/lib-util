@@ -64,13 +64,11 @@ trait RegistryConstants {
   }
 
   /**
-    * Returns the hostname of the specified application in the
+    * Returns the public hostname of the specified application in the
     * production environment.
     */
   def productionHost(applicationId: String): String = {
-    Try {
-      Await.result(asyncDnsLookupByName(applicationId), 100.millis)
-    }.fold(_ => s"https://$applicationId.$ProductionDomain", _ => s"http://domain")
+    s"https://$applicationId.$ProductionDomain"
   }
 
   def developmentHost(port: Long): String = {
@@ -88,9 +86,6 @@ trait RegistryConstants {
       case FlowEnvironment.Workstation => workstationHost(port)
     }
   }
-
-  protected def asyncDnsLookupByName(name: String) =
-    Future { InetAddress.getByName(name) }
 }
 
 object RegistryConstants extends RegistryConstants
@@ -105,8 +100,18 @@ class ProductionRegistry() extends Registry with RegistryConstants {
     RegistryConstants.log("Production", applicationId, s"Host[$host]")
     host
   }
-
 }
+
+class K8sProductionRegistry extends Registry with RegistryConstants {
+  override def host(applicationId: String): String =
+    Try {
+      Await.result(asyncDnsLookupByName(applicationId), 100.millis)
+    }.fold(_ => productionHost(applicationId), _ => s"http://$applicationId")
+
+  protected def asyncDnsLookupByName(name: String): Future[Unit] =
+    Future { InetAddress.getByName(name) }.map(_ => ())
+}
+
 
 class MockRegistry() extends Registry {
   override def host(applicationId: String) = s"http://$applicationId.localhost"

@@ -5,76 +5,75 @@ import org.scalatest.wordspec.AnyWordSpec
 
 import scala.concurrent.Future
 
-class K8sProductionRegistry extends ProductionRegistry {
-  override def asyncDnsLookupByName(name: String) = Future.successful(())
-}
-
-class NonPciProductionRegistry extends ProductionRegistry {
-  override def asyncDnsLookupByName(name: String) = Future.failed(new RuntimeException())
-}
-
-class DNSTimeoutRegistry extends ProductionRegistry {
-  override def asyncDnsLookupByName(name: String) = Future(Thread.sleep(1000000))
-}
-
 class RegistrySpec extends AnyWordSpec with Matchers {
+  private val nonpci = new ProductionRegistry()
+  private val k8s = new K8sProductionRegistry {
+    override protected def asyncDnsLookupByName(name: String): Future[Unit] =
+      Future.successful(())
+  }
+  private val k8sWithTimeout = new K8sProductionRegistry {
+    override protected def asyncDnsLookupByName(name: String): Future[Unit] =
+      Future(Thread.sleep(1000000))
+  }
+  private val mock = new MockRegistry()
+
   "NonK8sProductionRegistry" should {
     "payment" in {
-      new NonPciProductionRegistry().host("payment") shouldBe "https://payment.api.flow.io"
+      nonpci.host("payment") shouldBe "https://payment.api.flow.io"
     }
     "session" in {
-      new NonPciProductionRegistry().host("session") shouldBe "https://session.api.flow.io"
+      nonpci.host("session") shouldBe "https://session.api.flow.io"
     }
     "experience-api" in {
-      new NonPciProductionRegistry().host("experience") shouldBe "https://experience.api.flow.io"
+      nonpci.host("experience") shouldBe "https://experience.api.flow.io"
     }
     "experience-jobs" in {
-      new NonPciProductionRegistry().host("experience-jobs") shouldBe "https://experience-jobs.api.flow.io"
+      nonpci.host("experience-jobs") shouldBe "https://experience-jobs.api.flow.io"
     }
   }
 
   "K8sProductionRegistry" should {
     "payment" in {
-      new K8sProductionRegistry().host("payment") shouldBe "http://payment"
+      k8s.host("payment") shouldBe "http://payment"
     }
     "session" in {
-      new K8sProductionRegistry().host("session") shouldBe "http://session"
+      k8s.host("session") shouldBe "http://session"
     }
     "experience-api" in {
-      new K8sProductionRegistry().host("experience") shouldBe "http://experience"
+      k8s.host("experience") shouldBe "http://experience"
     }
     "experience-jobs" in {
-      new K8sProductionRegistry().host("experience-jobs") shouldBe "http://experience-jobs"
+      k8s.host("experience-jobs") shouldBe "http://experience-jobs"
     }
   }
 
   "ProductionRegistry with DNS Timeout" should {
     "payment" in {
-      new DNSTimeoutRegistry().host("payment") shouldBe "https://payment.api.flow.io"
+      k8sWithTimeout.host("payment") shouldBe "https://payment.api.flow.io"
     }
     "session" in {
-      new DNSTimeoutRegistry().host("session") shouldBe "https://session.api.flow.io"
+      k8sWithTimeout.host("session") shouldBe "https://session.api.flow.io"
     }
     "experience-api" in {
-      new DNSTimeoutRegistry().host("experience") shouldBe "https://experience.api.flow.io"
+      k8sWithTimeout.host("experience") shouldBe "https://experience.api.flow.io"
     }
     "experience-jobs" in {
-      new DNSTimeoutRegistry().host("experience-jobs") shouldBe "https://experience-jobs.api.flow.io"
+      k8sWithTimeout.host("experience-jobs") shouldBe "https://experience-jobs.api.flow.io"
     }
   }
 
   "MockRegistry" should {
     "payment" in {
-      new MockRegistry().host("payment") shouldBe "http://payment.localhost"
+      mock.host("payment") shouldBe "http://payment.localhost"
     }
     "session" in {
-      new MockRegistry().host("session") shouldBe "http://session.localhost"
+      mock.host("session") shouldBe "http://session.localhost"
     }
     "experience-api" in {
-      new MockRegistry().host("experience") shouldBe "http://experience.localhost"
+      mock.host("experience") shouldBe "http://experience.localhost"
     }
     "experience-jobs" in {
-      new MockRegistry().host("experience-jobs") shouldBe "http://experience-jobs.localhost"
+      mock.host("experience-jobs") shouldBe "http://experience-jobs.localhost"
     }
   }
 }
