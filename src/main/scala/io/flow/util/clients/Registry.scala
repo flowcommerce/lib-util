@@ -67,16 +67,11 @@ trait RegistryConstants {
     * Returns the hostname of the specified application in the
     * production environment.
     */
-  def productionHost(applicationId: String): String = Try {
-    Await.result(
-      asyncDnsLookupByName(applicationId),
-      100.millis
-    )
-  }.toOption.fold(
-    s"https://$applicationId.$ProductionDomain"
-  )(_ =>
-    s"http://$applicationId"
-  )
+  def productionHost(applicationId: String): String = {
+    Try {
+      Await.result(asyncDnsLookupByName(applicationId), 100.millis)
+    }.fold(_ => s"https://$applicationId.$ProductionDomain", _ => s"http://domain")
+  }
 
   def developmentHost(port: Long): String = {
     s"http://$devHost:$port"
@@ -94,9 +89,8 @@ trait RegistryConstants {
     }
   }
 
-  protected def asyncDnsLookupByName(name: String) = Future {
-    InetAddress.getByName(name)
-  }.map(_ => ())
+  protected def asyncDnsLookupByName(name: String) =
+    Future { InetAddress.getByName(name) }
 }
 
 object RegistryConstants extends RegistryConstants
