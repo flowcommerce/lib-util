@@ -40,8 +40,6 @@ trait RegistryConstants {
 
   val DefaultWorkstationHost = "ws"
 
-  implicit private[clients] val ec = ExecutionContext.fromExecutor(Executors.newSingleThreadExecutor)
-
   /**
     * Defaults to the workstation host
     */
@@ -103,6 +101,8 @@ class ProductionRegistry() extends Registry with RegistryConstants {
 }
 
 class K8sProductionRegistry extends Registry with RegistryConstants {
+  implicit private[clients] val ec = ExecutionContext.fromExecutor(Executors.newSingleThreadExecutor)
+
   override def host(applicationId: String): String =
     Try {
       Await.result(asyncDnsLookupByName(applicationId), 100.millis)
