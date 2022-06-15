@@ -3,6 +3,12 @@ package io.flow.util.clients
 import io.flow.util.{EnvironmentConfig, FlowEnvironment, PropertyConfig}
 import org.slf4j.{Logger, LoggerFactory}
 
+import java.net.InetAddress
+import java.util.concurrent.Executors
+import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.concurrent.duration._
+import scala.util.Try
+
 /**
   * This class implements service discovery for flow based on the
   * environment in which we are in. In production, hostnames are build
@@ -24,7 +30,7 @@ trait Registry {
 
 }
 
-object RegistryConstants {
+trait RegistryConstants {
 
   private val logger: Logger = LoggerFactory.getLogger(getClass)
 
@@ -33,6 +39,8 @@ object RegistryConstants {
   val WorkstationHostVariableName = "WORKSTATION_HOST"
 
   val DefaultWorkstationHost = "ws"
+
+  implicit private[clients] val ec = ExecutionContext.fromExecutor(Executors.newSingleThreadExecutor)
 
   /**
     * Defaults to the workstation host
@@ -59,18 +67,16 @@ object RegistryConstants {
     * Returns the hostname of the specified application in the
     * production environment.
     */
-  def productionHost(applicationId: String): String = {
+  def productionHost(applicationId: String): String = Try {
+    Await.result(
+      asyncDnsLookupByName(applicationId),
+      100.millis
+    )
+  }.toOption.fold(
     s"https://$applicationId.$ProductionDomain"
-  }
-
-  /**
-   * Returns the hostname of the specified application in the
-   * kubernetes production cluster environment.
-   */
-  def k8sProductionHost(applicationId: String): String = applicationId match {
-    case "payment" => s"https://$applicationId.$ProductionDomain"
-    case _         => s"http://$applicationId"
-  }
+  )(_ =>
+    s"http://$applicationId"
+  )
 
   def developmentHost(port: Long): String = {
     s"http://$devHost:$port"
@@ -88,25 +94,24 @@ object RegistryConstants {
     }
   }
 
+  protected def asyncDnsLookupByName(name: String) = Future {
+    InetAddress.getByName(name)
+  }.map(_ => ())
 }
+
+object RegistryConstants extends RegistryConstants
 
 /**
   * Production works by convention with no external dependencies.
   */
-class ProductionRegistry() extends Registry {
+class ProductionRegistry() extends Registry with RegistryConstants {
   override def host(applicationId: String): String = {
-    val host = RegistryConstants.productionHost(applicationId)
+    val host = productionHost(applicationId)
+
     RegistryConstants.log("Production", applicationId, s"Host[$host]")
     host
   }
-}
 
-class K8sProductionRegistry() extends Registry {
-  override def host(applicationId: String): String = {
-    val host = RegistryConstants.k8sProductionHost(applicationId)
-    RegistryConstants.log("Kubernetes Production", applicationId, s"Host[$host]")
-    host
-  }
 }
 
 class MockRegistry() extends Registry {
