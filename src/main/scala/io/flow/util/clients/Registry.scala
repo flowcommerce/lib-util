@@ -92,26 +92,21 @@ object RegistryConstants extends RegistryConstants
   * Production works by convention with no external dependencies.
   */
 class ProductionRegistry() extends Registry with RegistryConstants {
-  override def host(applicationId: String): String = {
-    val host = productionHost(applicationId)
-
-    RegistryConstants.log("Production", applicationId, s"Host[$host]")
-    host
-  }
-}
-
-class K8sProductionRegistry extends Registry with RegistryConstants {
   implicit private[clients] val ec = ExecutionContext.fromExecutor(Executors.newSingleThreadExecutor)
 
-  override def host(applicationId: String): String =
-    Try {
+  override def host(applicationId: String): String = {
+    val host = Try {
       Await.result(asyncDnsLookupByName(applicationId), 100.millis)
     }.fold(_ => productionHost(applicationId), _ => s"http://$applicationId")
+
+    log("Production", applicationId, s"Host[$host]")
+
+    host
+  }
 
   protected def asyncDnsLookupByName(name: String): Future[Unit] =
     Future { InetAddress.getByName(name) }.map(_ => ())
 }
-
 
 class MockRegistry() extends Registry {
   override def host(applicationId: String) = s"http://$applicationId.localhost"
