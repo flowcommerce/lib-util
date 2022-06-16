@@ -45,6 +45,8 @@ trait RegistryConstants {
 
   val DefaultWorkstationHost = "ws"
 
+  protected val DnsLookupWaitTime = 100.millis
+
   /**
     * Defaults to the workstation host
     */
@@ -72,7 +74,7 @@ trait RegistryConstants {
     */
   def productionHost(applicationId: String): String = {
     Try {
-      Await.result(asyncDnsLookupByName(applicationId), 100.millis)
+      Await.result(asyncDnsLookupByName(applicationId), DnsLookupWaitTime)
     }.fold(_ => s"https://$applicationId.$ProductionDomain", _ => s"http://$applicationId")
   }
 
