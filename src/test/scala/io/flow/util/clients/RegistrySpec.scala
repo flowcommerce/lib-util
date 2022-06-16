@@ -53,9 +53,9 @@ class RegistrySpec extends AnyWordSpec with Matchers {
     }
   }
 
-  "ProductionRegistry with successful lookup" should {
-    s"resolve api.flow.io" in {
-      prodRegistry.host("api.flow.io") shouldBe s"http://api.flow.io"
+  "ProductionRegistry with successful lookup" ignore {
+    s"resolve www.google.com" in {
+      prodRegistry.host("www.google.com") shouldBe s"http://www.google.com"
     }
   }
 
