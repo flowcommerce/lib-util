@@ -31,7 +31,7 @@ trait Registry {
 }
 
 private[clients] object RegistryEC {
-  implicit val ec = ExecutionContext.fromExecutor(Executors.newWorkStealingPool())
+  implicit val ec = ExecutionContext.fromExecutor(Executors.newWorkStealingPool(6))
 }
 
 trait RegistryConstants {
@@ -95,11 +95,8 @@ trait RegistryConstants {
   }
 
   protected def asyncDnsLookupByName(name: String): Future[Unit] = {
-    println(s"before=$name")
     Future {
-      println(s"name=$name")
-      val addr = InetAddress.getByName(name)
-      println(s"name=$name addr=$addr")
+      InetAddress.getByName(name)
     }.map(_ => ())
   }
 }
