@@ -53,7 +53,7 @@ class RegistrySpec extends AnyWordSpec with Matchers {
     }
   }
 
-  "ProductionRegistry with successful lookup" ignore {
+  "ProductionRegistry with successful lookup" should {
     s"resolve www.google.com" in {
       prodRegistry.host("www.google.com") shouldBe s"http://www.google.com"
     }
