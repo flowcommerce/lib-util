@@ -95,6 +95,7 @@ trait RegistryConstants {
   }
 
   protected def asyncDnsLookupByName(name: String): Future[Unit] = {
+    println(s"before=$name")
     Future {
       println(s"name=$name")
       val addr = InetAddress.getByName(name)
