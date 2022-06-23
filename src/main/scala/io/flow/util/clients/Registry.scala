@@ -3,6 +3,12 @@ package io.flow.util.clients
 import io.flow.util.{EnvironmentConfig, FlowEnvironment, PropertyConfig}
 import org.slf4j.{Logger, LoggerFactory}
 
+import java.net.InetAddress
+import java.util.concurrent.Executors
+import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.concurrent.duration._
+import scala.util.Try
+
 /**
   * This class implements service discovery for flow based on the
   * environment in which we are in. In production, hostnames are build
@@ -25,6 +31,9 @@ trait Registry {
 }
 
 object RegistryConstants {
+  private[clients] implicit val ec = ExecutionContext.fromExecutor(Executors.newWorkStealingPool(6))
+
+  private[clients] val DnsLookupWaitTime = 100.millis
 
   private val logger: Logger = LoggerFactory.getLogger(getClass)
 
@@ -56,7 +65,7 @@ object RegistryConstants {
   }
 
   /**
-    * Returns the hostname of the specified application in the
+    * Returns the public hostname of the specified application in the
     * production environment.
     */
   def productionHost(applicationId: String): String = {
@@ -78,20 +87,28 @@ object RegistryConstants {
       case FlowEnvironment.Workstation => workstationHost(port)
     }
   }
-
 }
 
 /**
   * Production works by convention with no external dependencies.
   */
 class ProductionRegistry() extends Registry {
+  import RegistryConstants.ec
 
   override def host(applicationId: String): String = {
-    val host = RegistryConstants.productionHost(applicationId)
+    val host = Try {
+      Await.result(asyncDnsLookupByName(applicationId), RegistryConstants.DnsLookupWaitTime)
+    }.fold(_ => RegistryConstants.productionHost(applicationId), _ => s"http://$applicationId")
+
     RegistryConstants.log("Production", applicationId, s"Host[$host]")
     host
   }
 
+  protected def asyncDnsLookupByName(name: String): Future[Unit] = {
+    Future {
+      InetAddress.getByName(name)
+    }.map(_ => ())
+  }
 }
 
 class MockRegistry() extends Registry {
