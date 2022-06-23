@@ -30,12 +30,10 @@ trait Registry {
 
 }
 
-private[clients] object RegistryEC {
-  implicit val ec = ExecutionContext.fromExecutor(Executors.newWorkStealingPool(6))
-}
+object RegistryConstants {
+  private[clients] implicit val ec = ExecutionContext.fromExecutor(Executors.newWorkStealingPool(6))
 
-trait RegistryConstants {
-  import RegistryEC._
+  private[clients] val DnsLookupWaitTime = 100.millis
 
   private val logger: Logger = LoggerFactory.getLogger(getClass)
 
@@ -44,8 +42,6 @@ trait RegistryConstants {
   val WorkstationHostVariableName = "WORKSTATION_HOST"
 
   val DefaultWorkstationHost = "ws"
-
-  protected val DnsLookupWaitTime = 100.millis
 
   /**
     * Defaults to the workstation host
@@ -73,9 +69,7 @@ trait RegistryConstants {
     * production environment.
     */
   def productionHost(applicationId: String): String = {
-    Try {
-      Await.result(asyncDnsLookupByName(applicationId), DnsLookupWaitTime)
-    }.fold(_ => s"https://$applicationId.$ProductionDomain", _ => s"http://$applicationId")
+    s"https://$applicationId.$ProductionDomain"
   }
 
   def developmentHost(port: Long): String = {
@@ -93,26 +87,28 @@ trait RegistryConstants {
       case FlowEnvironment.Workstation => workstationHost(port)
     }
   }
+}
+
+/**
+  * Production works by convention with no external dependencies.
+  */
+class ProductionRegistry() extends Registry {
+  import RegistryConstants.ec
+
+  override def host(applicationId: String): String = {
+    val host = Try {
+      Await.result(asyncDnsLookupByName(applicationId), RegistryConstants.DnsLookupWaitTime)
+    }.fold(_ => RegistryConstants.productionHost(applicationId), _ => s"http://$applicationId")
+
+    RegistryConstants.log("Production", applicationId, s"Host[$host]")
+    host
+  }
 
   protected def asyncDnsLookupByName(name: String): Future[Unit] = {
     Future {
       InetAddress.getByName(name)
     }.map(_ => ())
   }
-}
-
-object RegistryConstants extends RegistryConstants
-
-/**
-  * Production works by convention with no external dependencies.
-  */
-class ProductionRegistry() extends Registry with RegistryConstants {
-  override def host(applicationId: String): String = {
-    val host = productionHost(applicationId)
-    log("Production", applicationId, s"Host[$host]")
-    host
-  }
-
 }
 
 class MockRegistry() extends Registry {

@@ -4,7 +4,6 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
 import scala.concurrent.Future
-import scala.concurrent.duration._
 
 class RegistrySpec extends AnyWordSpec with Matchers {
   private val registryWithFailingLookup = new ProductionRegistry {
@@ -18,13 +17,12 @@ class RegistrySpec extends AnyWordSpec with Matchers {
       Future.successful(())
   }
   private val registryWithTimeout = new ProductionRegistry {
-    import RegistryEC._
+    import RegistryConstants.ec
     override protected def asyncDnsLookupByName(name: String): Future[Unit] =
       Future(Thread.sleep(1000000))
   }
-  private val prodRegistry = new ProductionRegistry {
-    override val DnsLookupWaitTime = 1000.millis
-  }
+  private val prodRegistry = new ProductionRegistry
+
   private val mock = new MockRegistry()
 
   val services = Seq("payment", "session", "experience", "experience-jobs")
