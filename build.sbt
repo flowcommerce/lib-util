@@ -4,6 +4,9 @@ organization := "io.flow"
 
 scalaVersion := "2.13.6"
 
+enablePlugins(GitVersioning)
+git.useGitDescribe := true
+
 lazy val allScalacOptions = Seq(
   "-feature",
   "-Xfatal-warnings",
@@ -26,6 +29,9 @@ libraryDependencies ++= Seq(
   "org.slf4j" % "slf4j-api" % "1.7.36", // Must follow Play - https://github.com/playframework/playframework/blob/2.8.x/project/Dependencies.scala#L52
   "org.joda" % "joda-convert" % "2.2.2",
   "org.scala-lang" % "scala-reflect" % scalaVersion.value,
+
+enablePlugins(GitVersioning)
+git.useGitDescribe := true
   "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.2",
   "org.mockito" % "mockito-scala_2.13" % "1.11.3" % Test,
   "org.scalatest" %% "scalatest" % "3.2.14" % Test,
@@ -51,4 +57,3 @@ publishTo := {
   }
 }
 
-version := "0.2.8"
