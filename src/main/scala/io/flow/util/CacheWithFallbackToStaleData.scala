@@ -31,6 +31,8 @@ trait CacheWithFallbackToStaleData[K, V] {
     */
   def duration: FiniteDuration = FiniteDuration(1, MINUTES)
 
+  def isShutdown: Boolean = false
+
   private[this] val DefaultDurationSecondsForNone = 2L
 
   /**
@@ -84,8 +86,9 @@ trait CacheWithFallbackToStaleData[K, V] {
             Option(currentEntry) match {
               // check again as this value may have been updated by a concurrent call
               case Some(foundEntry) =>
-                if (!foundEntry.isExpired) foundEntry
+                if (isShutdown || !foundEntry.isExpired) foundEntry
                 else doGetEntry(k)(failureFromRefresh(k, foundEntry, _))
+              case None if isShutdown => sys.error(s"Cache lookup for key [$key] during shutdown")
               case None => doGetEntry(k)(failureFromEmpty(k, _))
             }
           })
