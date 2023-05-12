@@ -21,7 +21,7 @@ private[util] case class CacheEntry[V](value: V, expiresAt: ZonedDateTime) {
   * executes the refresh function then). If the call to `get` fails, and
   * and there is data cached in memory, you will get back the stale data.
   */
-trait CacheWithFallbackToStaleData[K, V] extends ShutdownNotifiable {
+trait CacheWithFallbackToStaleData[K, V] extends Shutdownable {
 
   private[this] val cache = new java.util.concurrent.ConcurrentHashMap[K, CacheEntry[V]]()
   private val logger: Logger = LoggerFactory.getLogger(getClass)
