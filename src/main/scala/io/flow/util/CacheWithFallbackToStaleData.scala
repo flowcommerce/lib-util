@@ -21,7 +21,7 @@ private[util] case class CacheEntry[V](value: V, expiresAt: ZonedDateTime) {
   * executes the refresh function then). If the call to `get` fails, and
   * and there is data cached in memory, you will get back the stale data.
   */
-trait CacheWithFallbackToStaleData[K, V] {
+trait CacheWithFallbackToStaleData[K, V] extends Shutdownable {
 
   private[this] val cache = new java.util.concurrent.ConcurrentHashMap[K, CacheEntry[V]]()
   private val logger: Logger = LoggerFactory.getLogger(getClass)
@@ -84,8 +84,9 @@ trait CacheWithFallbackToStaleData[K, V] {
             Option(currentEntry) match {
               // check again as this value may have been updated by a concurrent call
               case Some(foundEntry) =>
-                if (!foundEntry.isExpired) foundEntry
+                if (isShutdown || !foundEntry.isExpired) foundEntry
                 else doGetEntry(k)(failureFromRefresh(k, foundEntry, _))
+              case None if isShutdown => sys.error(s"Cache lookup for key [$key] during shutdown")
               case None => doGetEntry(k)(failureFromEmpty(k, _))
             }
           })
