@@ -1,5 +1,5 @@
 package io.flow.util
 
-trait ShutdownNotified {
+trait ShutdownNotifiable {
   def shutdownInitiated(): Unit
 }
