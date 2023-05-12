@@ -1,6 +1,6 @@
 package io.flow.util
 
 trait Shutdownable {
-  def isShutdown: Boolean
+  def isShutdown: Boolean = false
 }
 
