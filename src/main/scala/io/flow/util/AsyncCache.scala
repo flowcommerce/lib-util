@@ -51,9 +51,7 @@ trait AsyncCache[K, V] extends Shutdownable {
    * Indicates how to fetch the value for a given key.
    * This function is called when the key is not cached or the value has expired.
    *
-   * If the function throws an exception and there is a value in the cache, this stale value will be returned.
-   * Otherwise the exception is thrown and must be handled.
-   * @see [[safeGet]] and [[getOrElse]]
+   * If the function returns a failed Future and there is a value in the cache, this stale value will be returned.
    */
   def refresh(key: K, firstTime: Boolean): Future[Option[V]]
 
