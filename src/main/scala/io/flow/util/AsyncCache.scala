@@ -1,15 +1,21 @@
 package io.flow.util
 
 import java.time.ZonedDateTime
-import java.time.temporal.ChronoField
-
+import java.time.temporal.ChronoUnit
 import scala.concurrent.Future
 import scala.concurrent.duration._
 import scala.util.Success
 
-private[util] case class AsyncCacheEntry[V](previousValue: Option[V], expiresAt: ZonedDateTime, nextValue: Future[Option[V]]) {
+private[util] case class AsyncCacheEntry[V](previousValue: Option[V], someExpiresAt: ZonedDateTime, noneExpiresAt: ZonedDateTime, nextValue: Future[Option[V]]) {
 
-  def isExpired: Boolean = expiresAt.isBefore(ZonedDateTime.now())
+  def isExpired: Boolean = {
+    val valueToConsider: Option[V] = nextValue.value match {
+      case Some(Success(value)) => value
+      case _ => previousValue
+    }
+    val expiry = valueToConsider.fold(noneExpiresAt)(_ => someExpiresAt)
+    expiry.isBefore(ZonedDateTime.now())
+  }
 
 }
 
@@ -64,7 +70,8 @@ trait AsyncCache[K, V] extends Shutdownable {
     */
   def flush(key: K): Unit = {
     cache.computeIfPresent(key, (_: K, entry: AsyncCacheEntry[V]) => {
-      entry.copy(expiresAt = ZonedDateTime.now.minus(1, ChronoField.MILLI_OF_DAY.getBaseUnit))
+      val expired = ZonedDateTime.now.minus(1, ChronoUnit.MILLIS)
+      entry.copy(someExpiresAt = expired, noneExpiresAt = expired)
     })
     ()
   }
@@ -86,7 +93,7 @@ trait AsyncCache[K, V] extends Shutdownable {
                 case _ => foundEntry.previousValue
               }
               doGetEntry(k, previousValue, false)
-            case None if isShutdown => AsyncCacheEntry(None, expirationInSeconds(None), Future.failed(new RuntimeException("Cache is shut down")))
+            case None if isShutdown => AsyncCacheEntry(None, expirationForNone(), expirationForNone(), Future.failed(new RuntimeException("Cache is shut down")))
             case None => doGetEntry(k, None, true)
           }
         })
@@ -100,17 +107,22 @@ trait AsyncCache[K, V] extends Shutdownable {
   private[this] def doGetEntry(key: K, previousValue: Option[V], firstTime: Boolean): AsyncCacheEntry[V] = {
     AsyncCacheEntry(
       previousValue = previousValue,
-      expiresAt = expirationInSeconds(previousValue),
+      someExpiresAt = expirationForSome(),
+      noneExpiresAt = expirationForNone(),
       nextValue = refresh(key, firstTime)
     )
   }
 
-  private[this] def expirationInSeconds(value: Option[V]) = {
-    ZonedDateTime.now.plusSeconds(value.fold(durationForNoneSeconds)(_ => durationSeconds))
+  private[this] def expirationForSome() = {
+    ZonedDateTime.now.plusSeconds(durationSeconds)
+  }
+
+  private[this] def expirationForNone() = {
+    ZonedDateTime.now.plusSeconds(durationForNoneSeconds)
   }
 
   initialContents().foreach { case (k, v) =>
     val value = Some(v)
-    cache.put(k, AsyncCacheEntry(value, expirationInSeconds(value), Future.successful(value)))
+    cache.put(k, AsyncCacheEntry(value, expirationForSome(), expirationForSome(), Future.successful(value)))
   }
 }
