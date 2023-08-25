@@ -79,22 +79,25 @@ trait AsyncCache[K, V] extends Shutdownable {
   def get(key: K): Option[V] = {
     // try to do a quick get first
     val finalEntry = Option(cache.get(key)) match {
-      case Some(retrievedEntry) if !retrievedEntry.isExpired =>
+      case Some(retrievedEntry) if isShutdown || !retrievedEntry.isExpired =>
         retrievedEntry
       case _ =>
         // atomically compute a new entry, to avoid calling "refresh" multiple times
         cache.compute(key, (k: K, currentEntry: AsyncCacheEntry[V]) => {
           Option(currentEntry) match {
             // check again as this value may have been updated by a concurrent call
-            case Some(foundEntry) if isShutdown || !foundEntry.isExpired => foundEntry
+            case Some(foundEntry) if isShutdown || !foundEntry.isExpired =>
+              foundEntry
             case Some(foundEntry) =>
               val previousValue = foundEntry.nextValue.value match {
                 case Some(Success(value)) => value
                 case _ => foundEntry.previousValue
               }
               doGetEntry(k, previousValue, false)
-            case None if isShutdown => AsyncCacheEntry(None, expirationForNone(), expirationForNone(), Future.failed(new RuntimeException("Cache is shut down")))
-            case None => doGetEntry(k, None, true)
+            case None if isShutdown =>
+              AsyncCacheEntry(None, expirationForNone(), expirationForNone(), Future.failed(new RuntimeException("Cache is shut down")))
+            case None =>
+              doGetEntry(k, None, true)
           }
         })
     }
