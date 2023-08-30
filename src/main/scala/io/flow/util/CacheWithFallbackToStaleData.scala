@@ -24,7 +24,7 @@ trait CacheWithFallbackToStaleData[K, V] extends Shutdownable {
       read = (_: K, _: V, d: FiniteDuration) => d,
     )
     .build[K, V](
-      loader = refresh _,
+      loader = refreshInternal _
     )
 
   private[this]def bootstrap() = Try(cache.putAll(initialContents().toMap))
@@ -119,6 +119,13 @@ trait CacheWithFallbackToStaleData[K, V] extends Shutdownable {
    * Returns the `default` value if the underlying call to [[get]] throws an exception
    */
   def getOrElse(key: K, default: => V): V = safeGet(key).getOrElse(default)
+
+  private def refreshInternal(key: K): V = {
+    if (isShutdown)
+      throw new RuntimeException("This cache has been shutdown")
+    else
+      refresh(key)
+  }
 
   @nowarn("cat=unused")
   private def computeExpiry(k: K, v: V): FiniteDuration = v match {
