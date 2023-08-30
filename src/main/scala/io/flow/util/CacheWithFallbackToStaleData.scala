@@ -1,11 +1,12 @@
 package io.flow.util
 
 import com.github.blemale.scaffeine.{LoadingCache, Scaffeine}
+import org.slf4j.{Logger, LoggerFactory}
 
 import scala.annotation.nowarn
 import scala.concurrent.Future
 import scala.concurrent.duration._
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
 
 /**
   * Caches data for a short period of time (configurable, defaults to 1 minute)
@@ -15,6 +16,7 @@ import scala.util.Try
   * and there is data cached in memory, you will get back the stale data.
   */
 trait CacheWithFallbackToStaleData[K, V] extends Shutdownable {
+  private val logger: Logger = LoggerFactory.getLogger(getClass)
 
   private[this] val cache: LoadingCache[K, V] = Scaffeine()
     .refreshAfterWrite(refreshInterval)
@@ -27,7 +29,14 @@ trait CacheWithFallbackToStaleData[K, V] extends Shutdownable {
       loader = refreshInternal _
     )
 
-  private[this]def bootstrap() = Try(cache.putAll(initialContents().toMap))
+  private[this]def bootstrap() = {
+    Try(
+      cache.putAll(initialContents().toMap)
+    ) match {
+      case Success(_) => ()
+      case Failure(f) => logger.warn("Failed to bootstrap cache", f)
+    }
+  }
 
   bootstrap()
 
