@@ -25,7 +25,6 @@ trait CacheWithFallbackToStaleData[K, V] extends Shutdownable {
     )
     .build[K, V](
       loader = refresh _,
-      allLoader = Some((keys: Iterable[K]) => refreshAll(keys.toSeq).getOrElse(keys.map(k => k -> refresh(k)).toMap))
     )
 
   private[this]def bootstrap() = {
@@ -83,9 +82,6 @@ trait CacheWithFallbackToStaleData[K, V] extends Shutdownable {
    */
   protected def refresh(key: K): V
 
-  @nowarn("cat=unused")
-  protected def refreshAll(keys: Seq[K]): Option[Map[K, V]] = None
-
   /**
     * Removes the specified key. On next access, will attempt to load it again. Note that
     * if refresh fails, the Exception is passed to the caller.
@@ -133,7 +129,7 @@ trait CacheWithFallbackToStaleData[K, V] extends Shutdownable {
    */
   def getOrElse(key: K, default: => V): V = safeGet(key).getOrElse(default)
 
-  @nowarn
+  @nowarn("cat=unused")
   private def computeExpiry(k: K, v: V): FiniteDuration = v match {
     case option: Option[_] =>
       option.fold(expireNoneInterval)(_ => expireInterval)
