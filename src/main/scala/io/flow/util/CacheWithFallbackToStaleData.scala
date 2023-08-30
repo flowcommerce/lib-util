@@ -1,18 +1,11 @@
 package io.flow.util
 
-import java.time.ZonedDateTime
-import java.time.temporal.ChronoField
+import com.github.blemale.scaffeine.{LoadingCache, Scaffeine}
 
-import org.slf4j.{Logger, LoggerFactory}
-
+import scala.annotation.nowarn
+import scala.concurrent.Future
 import scala.concurrent.duration._
-import scala.util.{Failure, Success, Try}
-
-private[util] case class CacheEntry[V](value: V, expiresAt: ZonedDateTime) {
-
-  def isExpired: Boolean = expiresAt.isBefore(ZonedDateTime.now())
-
-}
+import scala.util.Try
 
 /**
   * Caches data for a short period of time (configurable, defaults to 1 minute)
@@ -23,31 +16,62 @@ private[util] case class CacheEntry[V](value: V, expiresAt: ZonedDateTime) {
   */
 trait CacheWithFallbackToStaleData[K, V] extends Shutdownable {
 
-  private[this] val cache = new java.util.concurrent.ConcurrentHashMap[K, CacheEntry[V]]()
-  private val logger: Logger = LoggerFactory.getLogger(getClass)
+  private[this] val cache: LoadingCache[K, V] = Scaffeine()
+    .refreshAfterWrite(refreshInterval)
+    .expireAfter(
+      create = computeExpiry,
+      update = (k: K, v: V, _: FiniteDuration) => computeExpiry(k, v),
+      read = (_: K, _: V, d: FiniteDuration) => d,
+    )
+    .build[K, V](
+      loader = refresh _,
+      allLoader = Some((keys: Iterable[K]) => refreshAll(keys.toSeq).getOrElse(keys.map(k => k -> refresh(k)).toMap))
+    )
+
+  private[this]def bootstrap() = {
+    Try {
+      initialContents().foreach { case (key, value) =>
+        cache.put(key, value)
+      }
+    }
+  }
+
+  bootstrap()
+
+  @deprecated("Use refreshInterval", "0.2.21")
+  def duration: FiniteDuration = 1.minute
 
   /**
-    * Defines how long to cache each value for
-    */
-  def duration: FiniteDuration = FiniteDuration(1, MINUTES)
+   * Defines the duration after which values are reloaded in the background
+   */
+  @nowarn("cat=deprecation")
+  def refreshInterval: FiniteDuration = duration
 
-  private[this] val DefaultDurationSecondsForNone = 2L
+  @deprecated("Use expireNoneInterval", "0.2.21")
+  def durationForNone: FiniteDuration = 2.seconds
 
   /**
-    * If the result of the operation is either None, defines
-    * how long we cache this value for. A common use case at
-    * Flow is caching the lookup of an item - this allows us
-    * to more quickly check if that item is now defined which
-    * is a common case when consuming events. Defaults to
-    * the lower of the overall cache duration or 2 seconds.
-    */
-  def durationForNone: FiniteDuration = FiniteDuration(
-    Seq(DefaultDurationSecondsForNone, duration.toSeconds).min,
-    SECONDS
-  )
+   * Defines the duration after which `None` values are removed from the cache.
+   * A common use case is caching the lookup of an item - this allows us
+   * to more quickly check if that item is now defined which is a common case
+   * when consuming events. Defaults to 2 seconds.
+   */
+  @nowarn("cat=deprecation")
+  def expireNoneInterval: FiniteDuration = durationForNone
 
-  private[this] lazy val durationSeconds = duration.toSeconds
-  private[this] lazy val durationForNoneSeconds = durationForNone.toSeconds
+  /**
+   * Defines the duration after which values (that are not `None`) are removed from the cache.
+   * If keys are looked up, they never expire and instead get refreshed in the background.
+   * Only if they are not looked up within the expire interval, they are removed.
+   * Defaults to 5 times the refresh interval.
+   */
+  def expireInterval: FiniteDuration = 5 * refreshInterval
+
+  /**
+   * Can be used to populate the cache with an initial key-value set, instead of starting empty
+   * @return The initial keys and values
+   */
+  protected def initialContents(): Seq[(K, V)] = Nil
 
   /**
    * Indicates how to fetch the value for a given key.
@@ -57,44 +81,45 @@ trait CacheWithFallbackToStaleData[K, V] extends Shutdownable {
    * Otherwise the exception is thrown and must be handled.
    * @see [[safeGet]] and [[getOrElse]]
    */
-  def refresh(key: K): V
+  protected def refresh(key: K): V
+
+  @nowarn("cat=unused")
+  protected def refreshAll(keys: Seq[K]): Option[Map[K, V]] = None
 
   /**
-    * Marks the specified key as expired. On next access, will attempt to refresh. Note that
-    * if refresh fails, we will continue to return the stale data.
+    * Removes the specified key. On next access, will attempt to load it again. Note that
+    * if refresh fails, the Exception is passed to the caller.
     */
   def flush(key: K): Unit = {
-    cache.computeIfPresent(key, (_: K, entry: CacheEntry[V]) => {
-      entry.copy(expiresAt = ZonedDateTime.now.minus(1, ChronoField.MILLI_OF_DAY.getBaseUnit))
-    })
-    ()
+    cache.underlying.invalidate(key)
   }
 
   /**
-   * If [[refresh]] may throw an exception when the cache is empty, use [[safeGet]] or [[getOrElse]]
+   * Forces an asynchronous refresh of the specified key. If the key was present before, the cache will continue
+   * to return the previous value until the Future has completed.
+   *
+   * @return A Future of the new value
    */
-  def get(key: K): V = {
-    // try to do a quick get first
-    val finalEntry = Option(cache.get(key)) match {
-      case Some(retrievedEntry) =>
-        if (!retrievedEntry.isExpired) retrievedEntry
-        else {
-          // atomically compute a new entry, to avoid calling "refresh" multiple times
-          cache.compute(key, (k: K, currentEntry: CacheEntry[V]) => {
-            Option(currentEntry) match {
-              // check again as this value may have been updated by a concurrent call
-              case Some(foundEntry) =>
-                if (isShutdown || !foundEntry.isExpired) foundEntry
-                else doGetEntry(k)(failureFromRefresh(k, foundEntry, _))
-              case None if isShutdown => sys.error(s"Cache lookup for key [$key] during shutdown")
-              case None => doGetEntry(k)(failureFromEmpty(k, _))
-            }
-          })
-        }
-      // compute if absent as this value may have been updated by a concurrent call
-      case None => cache.computeIfAbsent(key, (k: K) => doGetEntry(k)(failureFromEmpty(k, _)))
-    }
-    finalEntry.value
+  def forceRefresh(key: K): Future[V] = {
+    import scala.compat.java8.FutureConverters._
+    cache.underlying.refresh(key).toScala
+  }
+
+  /**
+   * Looks up the cache value for the specified key. If the key is not already in the cache this will synchronously
+   * invoke `refresh`, block until `refresh` has returned and may throw an Exception when the loading of the key fails.
+   * If the key is already present it will return the current value, regardless of the refresh interval of the key.
+   * If the key's refresh interval has passed, it will asynchronously attempt to refresh the key, and update the cache.
+   */
+  def get(key: K): V = cache.get(key)
+
+  /**
+   * Looks up the cache value for the specified key, and returns it if it is already present.
+   * If the key is not already in the cache this will asynchronously invoke `refresh`, and add it to the cache.
+   */
+  def getIfPresent(key: K): Option[V] = cache.getIfPresent(key).orElse {
+    forceRefresh(key)
+    None
   }
 
   /**
@@ -108,36 +133,11 @@ trait CacheWithFallbackToStaleData[K, V] extends Shutdownable {
    */
   def getOrElse(key: K, default: => V): V = safeGet(key).getOrElse(default)
 
-  private[this] def failureFromEmpty(key: K, ex: Throwable): CacheEntry[V] = {
-    val msg = s"FlowError for Cache[${this.getClass.getName}] key[$key]: ${ex.getMessage}"
-    logger.error(msg, ex)
-    sys.error(msg)
-  }
-
-  private[this] def failureFromRefresh(key: K, currentEntry: CacheEntry[V], ex: Throwable): CacheEntry[V] = {
-    logger.warn(s"Cache[${this.getClass.getName}] key[$key]: Falling back to stale data " +
-      s"as refresh failed with: ${ex.getMessage}", ex)
-    currentEntry
-  }
-
-  private[this] def doGetEntry(key: K)(failureFunction: Throwable => CacheEntry[V]): CacheEntry[V] = {
-    Try(refresh(key)) match {
-      case Success(value) => {
-        CacheEntry(
-          value = value,
-          expiresAt = ZonedDateTime.now.plusSeconds(expirationInSeconds(value))
-        )
-      }
-      case Failure(ex) => failureFunction(ex)
-    }
-  }
-
-  private[this] def expirationInSeconds(value: V): Long = {
-    value match {
-      case option: Option[_] =>
-        option.fold(durationForNoneSeconds)(_ => durationSeconds)
-      case _ =>
-        durationSeconds
-    }
+  @nowarn
+  private def computeExpiry(k: K, v: V): FiniteDuration = v match {
+    case option: Option[_] =>
+      option.fold(expireNoneInterval)(_ => expireInterval)
+    case _ =>
+      expireInterval
   }
 }

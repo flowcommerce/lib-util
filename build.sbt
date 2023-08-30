@@ -30,6 +30,7 @@ libraryDependencies ++= Seq(
   "org.joda" % "joda-convert" % "2.2.3",
   "org.scala-lang" % "scala-reflect" % scalaVersion.value,
   "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.2",
+  "com.github.blemale" %% "scaffeine" % "5.2.1",
   "org.mockito" % "mockito-scala_2.13" % "1.11.3" % Test,
   "org.scalatest" %% "scalatest" % "3.2.16" % Test,
   "org.scalacheck" %% "scalacheck" % "1.17.0" % Test,
