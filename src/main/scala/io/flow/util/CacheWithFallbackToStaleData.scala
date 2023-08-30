@@ -96,10 +96,7 @@ trait CacheWithFallbackToStaleData[K, V] extends Shutdownable {
    *
    * @return A Future of the new value
    */
-  def forceRefresh(key: K): Future[V] = {
-    import scala.compat.java8.FutureConverters._
-    cache.underlying.refresh(key).toScala
-  }
+  def forceRefresh(key: K): Future[V] = cache.refresh(key)
 
   /**
    * Looks up the cache value for the specified key. If the key is not already in the cache this will synchronously
