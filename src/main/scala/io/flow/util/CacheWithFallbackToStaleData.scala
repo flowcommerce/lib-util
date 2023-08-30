@@ -27,13 +27,7 @@ trait CacheWithFallbackToStaleData[K, V] extends Shutdownable {
       loader = refresh _,
     )
 
-  private[this]def bootstrap() = {
-    Try {
-      initialContents().foreach { case (key, value) =>
-        cache.put(key, value)
-      }
-    }
-  }
+  private[this]def bootstrap() = Try(cache.putAll(initialContents().toMap))
 
   bootstrap()
 
