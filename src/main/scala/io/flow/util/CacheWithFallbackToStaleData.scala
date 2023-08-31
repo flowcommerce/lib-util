@@ -111,12 +111,15 @@ trait CacheWithFallbackToStaleData[K, V] extends Shutdownable {
 
   /**
    * Looks up the cache value for the specified key, and returns it if it is already present.
-   * If the key is not already in the cache this will asynchronously invoke `refresh`, and add it to the cache.
+   * This function does not perform a side effect (ie. load the value if it is missing).
    */
-  def getIfPresent(key: K): Option[V] = cache.getIfPresent(key).orElse {
-    forceRefresh(key)
-    None
-  }
+  def getIfPresent(key: K): Option[V] = cache.getIfPresent(key)
+
+  /**
+   * Returns a Future value for the specified key. If the value is present in the cache, the Future is completed
+   * immediately, otherwise `refresh` is called asynchronously.
+   */
+  def getAsync(key: K): Future[V] = getIfPresent(key).fold(forceRefresh(key))(Future.successful)
 
   /**
    * Use instead of [[get]] if [[refresh]] may throw an exception.

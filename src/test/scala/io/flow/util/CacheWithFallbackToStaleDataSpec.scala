@@ -270,7 +270,7 @@ class CacheWithFallbackToStaleDataSpec extends AnyWordSpecLike with Matchers {
     cache.numberRefreshes must equal(1)
   }
 
-  "getIfPresent" in {
+  "getIfPresent does not load missing keys" in {
     val cache = new TestCacheWithFallbackToStaleData[String]() {
       refreshDelayMs = 500L
     }
@@ -284,7 +284,55 @@ class CacheWithFallbackToStaleDataSpec extends AnyWordSpecLike with Matchers {
     Thread.sleep(600L)
 
     val (v3, t3) = time(cache.getIfPresent("a"))
-    v3 mustBe Some("apple")
+    v3 mustBe None
+    t3 must be < 100L
+
+    cache.numberRefreshes must equal(0)
+  }
+
+  "getIfPresent refreshes present keys" in {
+    val cache = new TestCacheWithFallbackToStaleData[String]() {
+      override def refreshInterval: FiniteDuration = 500.millis
+    }
+
+    cache.set("a", "apple")
+    cache.get("a")
+
+    Thread.sleep(600L)
+    cache.set("a", "apricot")
+
+    val (v1, t1) = time(cache.getIfPresent("a"))
+    v1 mustBe Some("apple")
+    t1 must be < 100L
+
+    Thread.sleep(100L)
+
+    val (v3, t3) = time(cache.getIfPresent("a"))
+    v3 mustBe Some("apricot")
+    t3 must be < 100L
+
+    cache.numberRefreshes must equal(2)
+  }
+
+  "getAsync" in {
+    val cache = new TestCacheWithFallbackToStaleData[String]() {
+      refreshDelayMs = 500L
+    }
+
+    cache.set("a", "apple")
+
+    val f1 = cache.getAsync("a")
+    f1.isCompleted mustBe false
+    val (v1, t1) = time(Await.result(f1, Duration.Inf))
+    v1 mustBe "apple"
+    t1 must be > 400L
+
+    Thread.sleep(600L)
+
+    val f2 = cache.getAsync("a")
+    f2.isCompleted mustBe true
+    val (v3, t3) = time(Await.result(f2, Duration.Inf))
+    v3 mustBe "apple"
     t3 must be < 100L
 
     cache.numberRefreshes must equal(1)
