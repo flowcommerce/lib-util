@@ -28,9 +28,11 @@ class CacheWithFallbackToStaleDataSpec extends AnyWordSpecLike with Matchers {
     var refreshDelayMs = 0L
 
     override def refresh(key: String): T = {
-      if (!refreshShouldFail) {
-        refreshes.incrementAndGet()
-        Thread.sleep(refreshDelayMs)
+      refreshes.incrementAndGet()
+      Thread.sleep(refreshDelayMs)
+      if (refreshShouldFail) {
+        throw new RuntimeException("boom")
+      } else {
         data.put(
           key,
           Option(nextValues.get(key))
@@ -59,9 +61,16 @@ class CacheWithFallbackToStaleDataSpec extends AnyWordSpecLike with Matchers {
     }
   }
 
+  private[this] def time[T](f: => T): (T, Long) = {
+    val start = System.currentTimeMillis()
+    val ret: T = f
+    val elapsed = System.currentTimeMillis() - start
+    (ret, elapsed)
+  }
+
   "cached values are served" in {
     val cache = new TestCacheWithFallbackToStaleData[String]() {
-      override val duration: FiniteDuration = FiniteDuration(1, SECONDS)
+      override def refreshInterval: FiniteDuration = FiniteDuration(1, SECONDS)
     }
     cache.set("a", "apple")
 
@@ -100,16 +109,14 @@ class CacheWithFallbackToStaleDataSpec extends AnyWordSpecLike with Matchers {
     cache.get("a") must equal("apple")
   }
 
-  "flushed key serves stale data if refresh fails" in {
+  "flushed key throws if refresh fails" in {
     val cache = TestCacheWithFallbackToStaleData[String]()
     cache.set("a", "apple")
     cache.flush("a")
 
     cache.refreshShouldFail = true
-    cache.setNextValue("a", "foo")
 
-    // failing refresh should return old value
-    cache.get("a") must equal("apple")
+    an[Exception] must be thrownBy cache.get("a")
   }
 
   "flushed key is immediately refreshed" in {
@@ -118,7 +125,7 @@ class CacheWithFallbackToStaleDataSpec extends AnyWordSpecLike with Matchers {
     cache.setNextValue("a", "foo")
     cache.flush("a")
 
-    // failing refresh should return old value
+    // succeeding refresh should return old value
     cache.get("a") must equal("foo")
   }
 
@@ -192,4 +199,142 @@ class CacheWithFallbackToStaleDataSpec extends AnyWordSpecLike with Matchers {
     cache.getOrElse("b", "default") mustBe "nonDefault"
   }
 
+  "initialContents" in {
+    val cache = new TestCacheWithFallbackToStaleData[String]() {
+      override def initialContents(): Seq[(String, String)] = Seq("a" -> "apple", "p" -> "pear")
+      refreshDelayMs = 500L
+    }
+
+    cache.set("b", "banana")
+
+    val (v1, t1) = time(cache.get("a"))
+    v1 mustBe "apple"
+    t1 must be < 100L
+
+    val (v2, t2) = time(cache.get("p"))
+    v2 mustBe "pear"
+    t2 must be < 100L
+
+    val (v3, t3) = time(cache.get("b"))
+    v3 mustBe "banana"
+    t3 must be >= 500L
+  }
+
+  "Initial load should block, refresh should happen in the background" in {
+    val cache = new TestCacheWithFallbackToStaleData[String]() {
+      override def refreshInterval: FiniteDuration = FiniteDuration(1, SECONDS)
+      refreshDelayMs = 500L
+    }
+
+    cache.set("a", "apple")
+
+    val (v1, t1) = time(cache.get("a"))
+    v1 mustBe "apple"
+    t1 must be >= 500L
+
+    Thread.sleep(1000L)
+    cache.set("a", "apricot")
+
+    val (v2, t2) = time(cache.get("a"))
+    v2 mustBe "apple"
+    t2 must be < 100L
+
+    Thread.sleep(600L)
+
+    val (v3, t3) = time(cache.get("a"))
+    v3 mustBe "apricot"
+    t3 must be < 100L
+
+    cache.numberRefreshes must equal(2)
+  }
+
+  "forceRefresh" in {
+    val cache = new TestCacheWithFallbackToStaleData[String]() {
+      override def initialContents(): Seq[(String, String)] = Seq("a" -> "apple")
+      refreshDelayMs = 500L
+    }
+
+    cache.set("a", "apricot")
+    cache.forceRefresh("a")
+
+    val (v2, t2) = time(cache.get("a"))
+    v2 mustBe "apple"
+    t2 must be < 100L
+
+    Thread.sleep(600L)
+
+    val (v3, t3) = time(cache.get("a"))
+    v3 mustBe "apricot"
+    t3 must be < 100L
+
+    cache.numberRefreshes must equal(1)
+  }
+
+  "getIfPresent does not load missing keys" in {
+    val cache = new TestCacheWithFallbackToStaleData[String]() {
+      refreshDelayMs = 500L
+    }
+
+    cache.set("a", "apple")
+
+    val (v1, t1) = time(cache.getIfPresent("a"))
+    v1 mustBe None
+    t1 must be < 100L
+
+    Thread.sleep(600L)
+
+    val (v3, t3) = time(cache.getIfPresent("a"))
+    v3 mustBe None
+    t3 must be < 100L
+
+    cache.numberRefreshes must equal(0)
+  }
+
+  "getIfPresent refreshes present keys" in {
+    val cache = new TestCacheWithFallbackToStaleData[String]() {
+      override def refreshInterval: FiniteDuration = 500.millis
+    }
+
+    cache.set("a", "apple")
+    cache.get("a")
+
+    Thread.sleep(600L)
+    cache.set("a", "apricot")
+
+    val (v1, t1) = time(cache.getIfPresent("a"))
+    v1 mustBe Some("apple")
+    t1 must be < 100L
+
+    Thread.sleep(100L)
+
+    val (v3, t3) = time(cache.getIfPresent("a"))
+    v3 mustBe Some("apricot")
+    t3 must be < 100L
+
+    cache.numberRefreshes must equal(2)
+  }
+
+  "getAsync" in {
+    val cache = new TestCacheWithFallbackToStaleData[String]() {
+      refreshDelayMs = 500L
+    }
+
+    cache.set("a", "apple")
+
+    val f1 = cache.getAsync("a")
+    f1.isCompleted mustBe false
+    val (v1, t1) = time(Await.result(f1, Duration.Inf))
+    v1 mustBe "apple"
+    t1 must be > 400L
+
+    Thread.sleep(600L)
+
+    val f2 = cache.getAsync("a")
+    f2.isCompleted mustBe true
+    val (v3, t3) = time(Await.result(f2, Duration.Inf))
+    v3 mustBe "apple"
+    t3 must be < 100L
+
+    cache.numberRefreshes must equal(1)
+  }
 }
