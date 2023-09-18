@@ -32,7 +32,7 @@ libraryDependencies ++= Seq(
   "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.2",
   "com.github.blemale" %% "scaffeine" % "5.2.1",
   "org.mockito" % "mockito-scala_2.13" % "1.11.3" % Test,
-  "org.scalatest" %% "scalatest" % "3.2.16" % Test,
+  "org.scalatest" %% "scalatest" % "3.2.17" % Test,
   "org.scalacheck" %% "scalacheck" % "1.17.0" % Test,
   "org.scalatestplus" %% "scalacheck-1-14" % "3.2.2.0" % Test,
 )
