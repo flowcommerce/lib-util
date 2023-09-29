@@ -26,7 +26,7 @@ trait CacheWithFallbackToStaleData[K, V] extends Shutdownable {
       read = (_: K, _: V, d: FiniteDuration) => d,
     )
     .build[K, V](
-      loader = refreshInternal _
+      loader = refresh _
     )
 
   private[this]def bootstrap() = {
@@ -40,17 +40,10 @@ trait CacheWithFallbackToStaleData[K, V] extends Shutdownable {
 
   bootstrap()
 
-  @deprecated("Use refreshInterval", "0.2.21")
-  def duration: FiniteDuration = 1.minute
-
   /**
    * Defines the duration after which values are reloaded in the background
    */
-  @nowarn("cat=deprecation")
-  def refreshInterval: FiniteDuration = duration
-
-  @deprecated("Use expireNoneInterval", "0.2.21")
-  def durationForNone: FiniteDuration = 2.seconds
+  def refreshInterval: FiniteDuration = 1.minute
 
   /**
    * Defines the duration after which `None` values are removed from the cache.
@@ -58,8 +51,7 @@ trait CacheWithFallbackToStaleData[K, V] extends Shutdownable {
    * to more quickly check if that item is now defined which is a common case
    * when consuming events. Defaults to 2 seconds.
    */
-  @nowarn("cat=deprecation")
-  def expireNoneInterval: FiniteDuration = durationForNone
+  def expireNoneInterval: FiniteDuration = 2.seconds
 
   /**
    * Defines the duration after which values (that are not `None`) are removed from the cache.
@@ -131,13 +123,6 @@ trait CacheWithFallbackToStaleData[K, V] extends Shutdownable {
    * Returns the `default` value if the underlying call to [[get]] throws an exception
    */
   def getOrElse(key: K, default: => V): V = safeGet(key).getOrElse(default)
-
-  private def refreshInternal(key: K): V = {
-    if (isShutdown)
-      throw new RuntimeException("This cache has been shutdown")
-    else
-      refresh(key)
-  }
 
   @nowarn("cat=unused")
   private def computeExpiry(k: K, v: V): FiniteDuration = v match {
