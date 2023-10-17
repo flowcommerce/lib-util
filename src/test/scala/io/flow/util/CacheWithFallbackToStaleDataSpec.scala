@@ -337,4 +337,20 @@ class CacheWithFallbackToStaleDataSpec extends AnyWordSpecLike with Matchers {
 
     cache.numberRefreshes must equal(1)
   }
+
+  "putAll" in {
+    val cache = new TestCacheWithFallbackToStaleData[String]() {
+      refreshDelayMs = 500L
+    }
+
+    cache.putAll(Map("a" -> "apple"))
+
+    val f1 = cache.getAsync("a")
+    f1.isCompleted mustBe true
+    val (v1, t1) = time(Await.result(f1, Duration.Inf))
+    v1 mustBe "apple"
+    t1 must be < 100L
+
+    cache.numberRefreshes must equal(0)
+  }
 }

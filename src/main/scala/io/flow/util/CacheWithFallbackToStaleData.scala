@@ -124,6 +124,11 @@ trait CacheWithFallbackToStaleData[K, V] extends Shutdownable {
    */
   def getOrElse(key: K, default: => V): V = safeGet(key).getOrElse(default)
 
+  /**
+   * Allows for a synchronous update of cache entries
+   */
+  def putAll(map: Map[K, V]): Unit = cache.putAll(map)
+
   @nowarn("cat=unused")
   private def computeExpiry(k: K, v: V): FiniteDuration = v match {
     case option: Option[_] =>
