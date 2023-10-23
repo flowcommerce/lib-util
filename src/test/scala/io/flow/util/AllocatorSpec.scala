@@ -132,9 +132,9 @@ class AllocatorSpec extends AnyWordSpec with Matchers with ScalaCheckDrivenPrope
       test(Seq(1, 2)) shouldBe Seq(33, 67)
     }
 
-    "proportionallyAllocateRound" in {
-      Allocator.proportionallyAllocateRound(100, Seq(1, 2, 1), 2) shouldBe Seq(25, 50, 25)
-      Allocator.proportionallyAllocateRound(18.322125575615818, Seq(287.04663401798115, 54.64879321687011, 31.477411738907975), 2) shouldBe Seq(14.09, 2.68, 1.55)
+    "Expect all allocated values to be rounded" in {
+      Allocator.proportionallyAllocateRound(amount = 100, proportions = Seq(1, 2, 1), scale = 2) shouldBe Seq(25, 50, 25)
+      Allocator.proportionallyAllocateRound(amount = 18.322125575615818, proportions = Seq(287.04663401798115, 54.64879321687011, 31.477411738907975), scale = 2) shouldBe Seq(14.09, 2.68, 1.55)
     }
   }
 }
