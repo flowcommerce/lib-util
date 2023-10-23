@@ -96,7 +96,7 @@ object Allocator {
       val step = BigDecimal(10).pow(-scale)
       val zero = (delta, mutable.ListBuffer[(Int, BigDecimal)]())
       val (_, allocatedDeltas) = distancesSorted.foldLeft(zero) { case ((remaining, acc), (_, _, index)) =>
-        if (remaining <= 0)
+        if (remaining < step)
           (remaining, acc)
         else {
           val toAllocate = step.min(remaining.abs)

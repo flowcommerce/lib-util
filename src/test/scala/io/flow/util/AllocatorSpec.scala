@@ -131,6 +131,11 @@ class AllocatorSpec extends AnyWordSpec with Matchers with ScalaCheckDrivenPrope
       test(Seq(1, 1, 1)) shouldBe Seq(34, 33, 33)
       test(Seq(1, 2)) shouldBe Seq(33, 67)
     }
+
+    "proportionallyAllocateRound" in {
+      Allocator.proportionallyAllocateRound(100, Seq(1, 2, 1), 2) shouldBe Seq(25, 50, 25)
+      Allocator.proportionallyAllocateRound(18.322125575615818, Seq(287.04663401798115, 54.64879321687011, 31.477411738907975), 2) shouldBe Seq(14.09, 2.68, 1.55)
+    }
   }
 }
 
