@@ -36,9 +36,12 @@ libraryDependencies ++= Seq(
   "org.scalacheck" %% "scalacheck" % "1.17.0" % Test,
   "org.scalatestplus" %% "scalacheck-1-14" % "3.2.2.0" % Test,
 )
-
-scalacOptions ++= allScalacOptions
-
+Test / javaOptions ++= Seq(
+  "--add-exports=java.base/sun.security.x509=ALL-UNNAMED",
+  "--add-opens=java.base/sun.security.ssl=ALL-UNNAMED",
+  "--add-opens=java.base/java.lang=ALL-UNNAMED"
+)
+scalacOptions ++= allScalacOptions ++ Seq("-release", "17")
 credentials += Credentials(
   "Artifactory Realm",
   "flow.jfrog.io",
