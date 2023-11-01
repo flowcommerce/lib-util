@@ -12,9 +12,9 @@ class ConfigSpec extends AnyWordSpec with Matchers with TryValues {
 
     override def get(name: String): Option[String] = memoryMap.get(name)
 
-    override def optionalMap(name: String): Option[Map[String, Seq[String]]] = None //unsupported in this test
+    override def optionalMap(name: String): Option[Map[String, Seq[String]]] = None // unsupported in this test
 
-    override def optionalList(name: String): Option[Seq[String]] = None //unsupported in this test
+    override def optionalList(name: String): Option[Seq[String]] = None // unsupported in this test
   }
 
   val config: Config = mockConfig(

@@ -1,8 +1,6 @@
 package io.flow.util
 
-/**
-  * Wrapper on the scala random libraries providing higher level
-  * common functions.
+/** Wrapper on the scala random libraries providing higher level common functions.
   */
 case class Random() {
 
@@ -10,11 +8,12 @@ case class Random() {
 
   private[this] val random = new java.security.SecureRandom
 
-  /**
-    * Generate a random string of length n from the given alphabet
+  /** Generate a random string of length n from the given alphabet
     *
-    * @param alphabet The complete set of
-    * @param n Length of random string to generate
+    * @param alphabet
+    *   The complete set of
+    * @param n
+    *   Length of random string to generate
     */
   def string(alphabet: String)(n: Int): String = {
     assert(n > 0, "n must be > 0")
@@ -27,38 +26,33 @@ case class Random() {
     s.toString()
   }
 
-  /**
-    * Generate a random string of length n using only a-z (lower case
-    * alphabet letters)
+  /** Generate a random string of length n using only a-z (lower case alphabet letters)
     *
-    * @param n Length of random string to generate
+    * @param n
+    *   Length of random string to generate
     */
   def lowercaseAlpha(n: Int): String = {
     string(Lower)(n)
   }
 
-  /**
-    * Generate a random string of length n using only a-z and A-Z
-    * (alphabet letters only)
+  /** Generate a random string of length n using only a-z and A-Z (alphabet letters only)
     *
-    * @param n Length of random string to generate
+    * @param n
+    *   Length of random string to generate
     */
   def alpha(n: Int): String = {
     string(LowerAndUpper)(n)
   }
 
-  /**
-    * Generate a random string of length n using only letters (a-z,
-    * A-Z) and numbers (0-9). Also guarantees that the random string
-    * will start with a letter, not a number - this is mostly to
-    * prevent problems with any applications that infer numeric based
-    * on first digit (or strip zeroes).
+  /** Generate a random string of length n using only letters (a-z, A-Z) and numbers (0-9). Also guarantees that the
+    * random string will start with a letter, not a number - this is mostly to prevent problems with any applications
+    * that infer numeric based on first digit (or strip zeroes).
     *
-    * The random string is guaranteed to start with a letter (we do
-    * this to avoid confusion in some programs like excel which can
-    * infer a numeric type based on the first character)
+    * The random string is guaranteed to start with a letter (we do this to avoid confusion in some programs like excel
+    * which can infer a numeric type based on the first character)
     *
-    * @param n Length of random string to generate
+    * @param n
+    *   Length of random string to generate
     */
   def alphaNumeric(n: Int): String = {
     if (n == 1) {
@@ -71,17 +65,15 @@ case class Random() {
     }
   }
 
-  /**
-    * Generate a random string of length n using only letters and
-    * numbers that are non ambiguous (e.g. B can look like an 8 so
-    * neither B nor 8 is used in the random string). This is a good
-    * option for random strings that will be read by humans.
+  /** Generate a random string of length n using only letters and numbers that are non ambiguous (e.g. B can look like
+    * an 8 so neither B nor 8 is used in the random string). This is a good option for random strings that will be read
+    * by humans.
     *
-    * The random string is guaranteed to start with a letter (we do
-    * this to avoid confusion in some programs like excel which can
-    * infer a numeric type based on the first character)
+    * The random string is guaranteed to start with a letter (we do this to avoid confusion in some programs like excel
+    * which can infer a numeric type based on the first character)
     *
-    * @param n Length of random string to generate
+    * @param n
+    *   Length of random string to generate
     */
   def alphaNumericNonAmbiguous(n: Int): String = {
     if (n == 1) {
@@ -94,13 +86,11 @@ case class Random() {
     }
   }
 
-  /**
-    * Generate a random positive int
+  /** Generate a random positive int
     */
   final def positiveInt(): Int = random.nextInt() & Int.MaxValue
 
-  /**
-    * Generate a random positive long
+  /** Generate a random positive long
     */
   final def positiveLong(): Long = random.nextLong() & Long.MaxValue
 

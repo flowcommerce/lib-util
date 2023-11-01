@@ -2,16 +2,13 @@ package io.flow.util
 
 import org.slf4j.{Logger, LoggerFactory}
 
-/**
-  * Wrapper on play config testing for empty strings and standardizing
-  * error message for required configuration.
+/** Wrapper on play config testing for empty strings and standardizing error message for required configuration.
   */
 trait Config extends ConfigMethods {
 
   protected val logger: Logger = LoggerFactory.getLogger(getClass)
 
-  /**
-    * Return the raw String value for the configuration parameter with the specified name
+  /** Return the raw String value for the configuration parameter with the specified name
     */
   protected def get(name: String): Option[String]
 
@@ -63,27 +60,19 @@ trait EnvironmentConfigLike extends Config {
     }
   }
 
-  /**
-    * Example:
-    * Given env:
-    * HELLO_WORLD_FOO = "bar, baz"
-    * HELLO_WORLD_BAR_BAR = "foo"
+  /** Example: Given env: HELLO_WORLD_FOO = "bar, baz" HELLO_WORLD_BAR_BAR = "foo"
     *
-    * The call:
-    * optionalMap(HELLO_WORLD)
+    * The call: optionalMap(HELLO_WORLD)
     *
     * will return
     *
-    * Map(
-    *   "foo" -> Seq("bar", "baz"),
-    *   "bar.bar" -> Seq("foo")
-    * )
-    * */
+    * Map( "foo" -> Seq("bar", "baz"), "bar.bar" -> Seq("foo") )
+    */
   override def optionalMap(name: String): Option[Map[String, Seq[String]]] = {
     val prefix = name + "_"
 
     //////////////////////////////////
-    //functions transforming the keys
+    // functions transforming the keys
     //////////////////////////////////
     val stripKey: String => String = _.drop(prefix.length)
     val underscoresAsDots: String => String = _.replace("_", ".")
@@ -94,7 +83,7 @@ trait EnvironmentConfigLike extends Config {
         underscoresAsDots
 
     /////////////////////////////////////////////////////
-    //collecting matching keys and transforming the keys
+    // collecting matching keys and transforming the keys
     /////////////////////////////////////////////////////
     val matchingKeys = source().filter { case (k, _) => k.startsWith(prefix) }
 

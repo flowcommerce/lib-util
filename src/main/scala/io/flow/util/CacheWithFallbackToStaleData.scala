@@ -8,12 +8,10 @@ import scala.concurrent.Future
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
-/**
-  * Caches data for a short period of time (configurable, defaults to 1 minute)
+/** Caches data for a short period of time (configurable, defaults to 1 minute)
   *
-  * Refreshes data on demand (when you call `get`, if entry is not in cache
-  * executes the refresh function then). If the call to `get` fails, and
-  * and there is data cached in memory, you will get back the stale data.
+  * Refreshes data on demand (when you call `get`, if entry is not in cache executes the refresh function then). If the
+  * call to `get` fails, and and there is data cached in memory, you will get back the stale data.
   */
 trait CacheWithFallbackToStaleData[K, V] extends Shutdownable {
   private val logger: Logger = LoggerFactory.getLogger(getClass)
@@ -23,13 +21,13 @@ trait CacheWithFallbackToStaleData[K, V] extends Shutdownable {
     .expireAfter(
       create = computeExpiry,
       update = (k: K, v: V, _: FiniteDuration) => computeExpiry(k, v),
-      read = (_: K, _: V, d: FiniteDuration) => d,
+      read = (_: K, _: V, d: FiniteDuration) => d
     )
     .build[K, V](
       loader = refresh _
     )
 
-  private[this]def bootstrap() = {
+  private[this] def bootstrap() = {
     Try(
       cache.putAll(initialContents().toMap)
     ) match {
@@ -40,93 +38,82 @@ trait CacheWithFallbackToStaleData[K, V] extends Shutdownable {
 
   bootstrap()
 
-  /**
-   * Defines the duration after which values are reloaded in the background
-   */
+  /** Defines the duration after which values are reloaded in the background
+    */
   def refreshInterval: FiniteDuration = 1.minute
 
-  /**
-   * Defines the duration after which `None` values are removed from the cache.
-   * A common use case is caching the lookup of an item - this allows us
-   * to more quickly check if that item is now defined which is a common case
-   * when consuming events. Defaults to 2 seconds.
-   */
+  /** Defines the duration after which `None` values are removed from the cache. A common use case is caching the lookup
+    * of an item - this allows us to more quickly check if that item is now defined which is a common case when
+    * consuming events. Defaults to 2 seconds.
+    */
   def expireNoneInterval: FiniteDuration = 2.seconds
 
-  /**
-   * Defines the duration after which values (that are not `None`) are removed from the cache.
-   * If keys are looked up, they never expire and instead get refreshed in the background.
-   * Only if they are not looked up within the expire interval, they are removed.
-   * Defaults to 5 times the refresh interval.
-   */
+  /** Defines the duration after which values (that are not `None`) are removed from the cache. If keys are looked up,
+    * they never expire and instead get refreshed in the background. Only if they are not looked up within the expire
+    * interval, they are removed. Defaults to 5 times the refresh interval.
+    */
   def expireInterval: FiniteDuration = 5 * refreshInterval
 
-  /**
-   * Can be used to populate the cache with an initial key-value set, instead of starting empty
-   * @return The initial keys and values
-   */
+  /** Can be used to populate the cache with an initial key-value set, instead of starting empty
+    * @return
+    *   The initial keys and values
+    */
   protected def initialContents(): Seq[(K, V)] = Nil
 
-  /**
-   * Indicates how to fetch the value for a given key.
-   * This function is called when the key is not cached or the value has expired.
-   *
-   * If the function throws an exception and there is a value in the cache, this stale value will be returned.
-   * Otherwise the exception is thrown and must be handled.
-   * @see [[safeGet]] and [[getOrElse]]
-   */
+  /** Indicates how to fetch the value for a given key. This function is called when the key is not cached or the value
+    * has expired.
+    *
+    * If the function throws an exception and there is a value in the cache, this stale value will be returned.
+    * Otherwise the exception is thrown and must be handled.
+    * @see
+    *   [[safeGet]] and [[getOrElse]]
+    */
   protected def refresh(key: K): V
 
-  /**
-    * Removes the specified key. On next access, will attempt to load it again. Note that
-    * if refresh fails, the Exception is passed to the caller.
+  /** Removes the specified key. On next access, will attempt to load it again. Note that if refresh fails, the
+    * Exception is passed to the caller.
     */
   def flush(key: K): Unit = {
     cache.underlying.invalidate(key)
   }
 
-  /**
-   * Forces an asynchronous refresh of the specified key. If the key was present before, the cache will continue
-   * to return the previous value until the Future has completed.
-   *
-   * @return A Future of the new value
-   */
+  /** Forces an asynchronous refresh of the specified key. If the key was present before, the cache will continue to
+    * return the previous value until the Future has completed.
+    *
+    * @return
+    *   A Future of the new value
+    */
   def forceRefresh(key: K): Future[V] = cache.refresh(key)
 
-  /**
-   * Looks up the cache value for the specified key. If the key is not already in the cache this will synchronously
-   * invoke `refresh`, block until `refresh` has returned and may throw an Exception when the loading of the key fails.
-   * If the key is already present it will return the current value, regardless of the refresh interval of the key.
-   * If the key's refresh interval has passed, it will asynchronously attempt to refresh the key, and update the cache.
-   */
+  /** Looks up the cache value for the specified key. If the key is not already in the cache this will synchronously
+    * invoke `refresh`, block until `refresh` has returned and may throw an Exception when the loading of the key fails.
+    * If the key is already present it will return the current value, regardless of the refresh interval of the key. If
+    * the key's refresh interval has passed, it will asynchronously attempt to refresh the key, and update the cache.
+    */
   def get(key: K): V = cache.get(key)
 
-  /**
-   * Looks up the cache value for the specified key, and returns it if it is already present.
-   * This function does not perform a side effect (ie. load the value if it is missing).
-   */
+  /** Looks up the cache value for the specified key, and returns it if it is already present. This function does not
+    * perform a side effect (ie. load the value if it is missing).
+    */
   def getIfPresent(key: K): Option[V] = cache.getIfPresent(key)
 
-  /**
-   * Returns a Future value for the specified key. If the value is present in the cache, the Future is completed
-   * immediately, otherwise `refresh` is called asynchronously.
-   */
+  /** Returns a Future value for the specified key. If the value is present in the cache, the Future is completed
+    * immediately, otherwise `refresh` is called asynchronously.
+    */
   def getAsync(key: K): Future[V] = getIfPresent(key).fold(forceRefresh(key))(Future.successful)
 
-  /**
-   * Use instead of [[get]] if [[refresh]] may throw an exception.
-   * @see [[getOrElse]] to return a default value
-   */
+  /** Use instead of [[get]] if [[refresh]] may throw an exception.
+    * @see
+    *   [[getOrElse]] to return a default value
+    */
   def safeGet(key: K): Try[V] = Try(get(key))
 
-  /**
-   * Returns the `default` value if the underlying call to [[get]] throws an exception
-   */
+  /** Returns the `default` value if the underlying call to [[get]] throws an exception
+    */
   def getOrElse(key: K, default: => V): V = safeGet(key).getOrElse(default)
 
-  /**
-   * Allows for a synchronous update of cache entries
-   */
+  /** Allows for a synchronous update of cache entries
+    */
   def putAll(map: Map[K, V]): Unit = cache.putAll(map)
 
   @nowarn("cat=unused")

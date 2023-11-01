@@ -42,6 +42,7 @@ Test / javaOptions ++= Seq(
   "--add-opens=java.base/java.lang=ALL-UNNAMED"
 )
 scalacOptions ++= allScalacOptions ++ Seq("-release", "17")
+  scalafmtOnCompile := true
 credentials += Credentials(
   "Artifactory Realm",
   "flow.jfrog.io",

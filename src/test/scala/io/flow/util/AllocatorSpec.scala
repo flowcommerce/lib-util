@@ -7,7 +7,7 @@ import org.scalatest.wordspec.AnyWordSpec
 
 class AllocatorSpec extends AnyWordSpec with Matchers with ScalaCheckDrivenPropertyChecks {
 
-  private val elementGen: Gen[BigDecimal] = Gen.choose(1, 1000000).map(BigDecimal(_)/ 100)
+  private val elementGen: Gen[BigDecimal] = Gen.choose(1, 1000000).map(BigDecimal(_) / 100)
   private val elementsGen: Gen[List[BigDecimal]] = Gen.nonEmptyListOf(elementGen)
   private val amountGen: Gen[BigDecimal] = Gen.choose(-10000000, 10000000).suchThat(_ != 0).map(BigDecimal(_) / 100)
   private val amountIntGen: Gen[Int] = Gen.choose(-10000000, 10000000).suchThat(_ != 0)
@@ -133,5 +133,3 @@ class AllocatorSpec extends AnyWordSpec with Matchers with ScalaCheckDrivenPrope
     }
   }
 }
-
-

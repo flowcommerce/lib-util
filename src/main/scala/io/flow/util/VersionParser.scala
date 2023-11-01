@@ -4,8 +4,7 @@ import scala.util.parsing.combinator._
 
 case class Version(value: String, tags: Seq[Tag]) extends Ordered[Version] {
 
-  /**
-    * If present, the major version number
+  /** If present, the major version number
     */
   val major: Option[Long] = {
     tags.headOption.flatMap { tag =>
@@ -16,11 +15,8 @@ case class Version(value: String, tags: Seq[Tag]) extends Ordered[Version] {
     }
   }
 
-  /**
-    * If possible, we construct the next micro version number higher
-    * than the present version. General algorithm is to find the first
-    * semver or date tag and then increment its smallest version
-    * (micro for semver, minor for date).
+  /** If possible, we construct the next micro version number higher than the present version. General algorithm is to
+    * find the first semver or date tag and then increment its smallest version (micro for semver, minor for date).
     */
   def nextMicro(): Option[Version] = {
     var found: Option[(Tag, Tag)] = None
@@ -43,36 +39,34 @@ case class Version(value: String, tags: Seq[Tag]) extends Ordered[Version] {
     }
   }
 
-  /**
-    * Note that we want to make sure that the simple semver versions
-    * sort highest - thus if we have exactly one tag that is semver,
-    * bump up its priority. This allows for 1.0.0 to sort
-    * before 1.0.0-dev (as one example). General strategy in the sort
-    * key is to append a high padding that includes the number of
-    * remaining elements (which naturally favors shorter version
-    * numbers).
+  /** Note that we want to make sure that the simple semver versions sort highest - thus if we have exactly one tag that
+    * is semver, bump up its priority. This allows for 1.0.0 to sort before 1.0.0-dev (as one example). General strategy
+    * in the sort key is to append a high padding that includes the number of remaining elements (which naturally favors
+    * shorter version numbers).
     */
   val sortKey: String = {
     var offset = tags.length
 
-    tags.zipWithIndex.map { case (tag, i) =>
-      // If next tag is semver, we do not penalize the sort - see test
-      // cases. This is a hack for tags that are composed of inple
-      // semver portions to just enable natural semver ordering.
-      offset = tags.lift(i + 1) match {
-        case None => offset
-        case Some(_: Tag.Text) => offset - 1
-        case Some(_: Tag.Date) => offset - 1
-        case Some(_: Tag.Semver) => offset
-      }
+    tags.zipWithIndex
+      .map { case (tag, i) =>
+        // If next tag is semver, we do not penalize the sort - see test
+        // cases. This is a hack for tags that are composed of inple
+        // semver portions to just enable natural semver ordering.
+        offset = tags.lift(i + 1) match {
+          case None => offset
+          case Some(_: Tag.Text) => offset - 1
+          case Some(_: Tag.Date) => offset - 1
+          case Some(_: Tag.Semver) => offset
+        }
 
-      val remaining = Tag.MaxPadding - (tags.length - offset)
-      tag match {
-        case t: Tag.Text =>   Seq(20, t.sortKey, remaining).mkString(".")
-        case t: Tag.Date =>   Seq(40, t.sortKey, remaining).mkString(".")
-        case t: Tag.Semver => Seq(60, t.sortKey, remaining).mkString(".")
+        val remaining = (Tag.MaxPadding - (tags.length - offset)).toString
+        tag match {
+          case t: Tag.Text => Seq("20", t.sortKey, remaining).mkString(".")
+          case t: Tag.Date => Seq("40", t.sortKey, remaining).mkString(".")
+          case t: Tag.Semver => Seq("60", t.sortKey, remaining).mkString(".")
+        }
       }
-    }.mkString(",")
+      .mkString(",")
   }
 
   def compare(that: Version): Int = {
@@ -90,13 +84,11 @@ object Version {
 
 sealed trait Tag extends Ordered[Tag] {
 
-  /**
-    * Constucts string repesentation of this tag
+  /** Constucts string repesentation of this tag
     */
   val value: String
 
-  /**
-    * Constructs a lexicographic sort key for this tag
+  /** Constructs a lexicographic sort key for this tag
     */
   val sortKey: String
 

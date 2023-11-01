@@ -10,8 +10,8 @@ class RandomSpec extends AnyWordSpecLike with Matchers {
 
   def validate(alphabet: String, values: Seq[String]): Unit = {
     val letters = alphabet.split("")
-    values.distinct.size must be(values.size)
-    values.forall { _.size == Length } must be(true)
+    values.distinct.length must be(values.length)
+    values.forall { _.length == Length } must be(true)
 
     values.foreach { v =>
       v.split("").find { l => !letters.contains(l) } match {
@@ -27,7 +27,7 @@ class RandomSpec extends AnyWordSpecLike with Matchers {
 
     // This is a probabilistic check - we choose 3 arbitrarily to
     // minimize chance of a false failure
-    if (missing.size > 3) {
+    if (missing.length > 3) {
       sys.error("Did not find the following expected chars: " + missing.sorted.mkString(", "))
     }
   }
@@ -35,7 +35,7 @@ class RandomSpec extends AnyWordSpecLike with Matchers {
   def validateDoesNotStartWithNumber(values: Seq[String]): Unit = {
     val numbers = "0123456789".split("")
     val found = values.filter { v => numbers.contains(v.substring(0, 1)) }
-    if (!found.isEmpty) {
+    if (found.nonEmpty) {
       sys.error("Value must not have started with a number: " + values.mkString(", "))
     }
   }
@@ -74,13 +74,13 @@ class RandomSpec extends AnyWordSpecLike with Matchers {
 
   "positiveInt" in {
     val values = 1.to(100).map { _ => random.positiveInt() }
-    values.distinct.size must be(values.size)
+    values.distinct.length must be(values.length)
     values.forall { i => i > 0 } must be(true)
   }
 
   "positiveLong" in {
     val values = 1.to(100).map { _ => random.positiveLong() }
-    values.distinct.size must be(values.size)
+    values.distinct.length must be(values.length)
     values.forall { i => i > 0 } must be(true)
   }
 

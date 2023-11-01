@@ -9,29 +9,24 @@ import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration._
 import scala.util.Try
 
-/**
-  * This class implements service discovery for flow based on the
-  * environment in which we are in. In production, hostnames are build
-  * using convention (e.g. 'user' => 'user.api.flow.io'). In
-  * development, hostnames are built by querying the registry for port
-  * mappings.
+/** This class implements service discovery for flow based on the environment in which we are in. In production,
+  * hostnames are build using convention (e.g. 'user' => 'user.api.flow.io'). In development, hostnames are built by
+  * querying the registry for port mappings.
   *
   * Example:
   *
-  *    lazy val client = new Client(new Registry(env).host("user"))
+  * lazy val client = new Client(new Registry(env).host("user"))
   */
 trait Registry {
 
-  /**
-    * Returns the host of the application
-    * (e.g. http://user.api.flow.io or http://vm:6011)
+  /** Returns the host of the application (e.g. http://user.api.flow.io or http://vm:6011)
     */
   def host(applicationId: String): String
 
 }
 
 object RegistryConstants {
-  private[clients] implicit val ec = ExecutionContext.fromExecutor(Executors.newWorkStealingPool(6))
+  private[clients] implicit val ec: ExecutionContext = ExecutionContext.fromExecutor(Executors.newWorkStealingPool(6))
 
   private[clients] val DnsLookupWaitTime = 100.millis
 
@@ -43,18 +38,18 @@ object RegistryConstants {
 
   val DefaultWorkstationHost = "ws"
 
-  /**
-    * Defaults to the workstation host
+  /** Defaults to the workstation host
     */
   private[this] lazy val devHost: String = workstationHost
 
-  /**
-    * The resolved name of the host used in workstation
+  /** The resolved name of the host used in workstation
     */
   private[this] lazy val workstationHost: String = {
     EnvironmentConfig.optionalString(WorkstationHostVariableName).getOrElse {
       PropertyConfig.optionalString(WorkstationHostVariableName).getOrElse {
-        logger.info(s"[${getClass.getName}] defaulting workstationHost to '$DefaultWorkstationHost' (can override via env var[$WorkstationHostVariableName])")
+        logger.info(
+          s"[${getClass.getName}] defaulting workstationHost to '$DefaultWorkstationHost' (can override via env var[$WorkstationHostVariableName])"
+        )
         DefaultWorkstationHost
       }
     }
@@ -64,9 +59,7 @@ object RegistryConstants {
     logger.info(s"[${getClass.getName} $env] app[$applicationId] $message")
   }
 
-  /**
-    * Returns the public hostname of the specified application in the
-    * production environment.
+  /** Returns the public hostname of the specified application in the production environment.
     */
   def productionHost(applicationId: String): String = {
     s"https://$applicationId.$ProductionDomain"
@@ -89,8 +82,7 @@ object RegistryConstants {
   }
 }
 
-/**
-  * Production works by convention with no external dependencies.
+/** Production works by convention with no external dependencies.
   */
 class ProductionRegistry() extends Registry {
   import RegistryConstants.ec
