@@ -20,7 +20,9 @@ class FlowEnvironmentSpec extends AnyWordSpecLike with Matchers {
     FlowEnvironment.parse("test", "production") must be(FlowEnvironment.Production)
     intercept[Throwable] {
       FlowEnvironment.parse("test", "other")
-    }.getMessage must be("Value[other] from test[FLOW_ENV] is invalid. Valid values are: development, production, workstation")
+    }.getMessage must be(
+      "Value[other] from test[FLOW_ENV] is invalid. Valid values are: development, production, workstation"
+    )
   }
 
 }

@@ -2,17 +2,16 @@ package io.flow.util
 
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
-
 import org.scalatest.concurrent.Eventually.{eventually, timeout}
 import org.scalatest.time.{Seconds, Span}
 
 import scala.concurrent.duration._
-import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.concurrent.{Await, ExecutionContext, ExecutionContextExecutor, Future}
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
 
 class CacheWithFallbackToStaleDataSpec extends AnyWordSpecLike with Matchers {
-  implicit val executionContext = ExecutionContext.global
+  private implicit val executionContext: ExecutionContextExecutor = ExecutionContext.global
 
   private[this] case class TestCacheWithFallbackToStaleData[T]() extends CacheWithFallbackToStaleData[String, T] {
 
@@ -134,7 +133,7 @@ class CacheWithFallbackToStaleDataSpec extends AnyWordSpecLike with Matchers {
     cache.setNextValue("a", "apple")
     cache.get("a") must equal("apple")
     cache.setNextValue("a", "foo")
-    cache.get("a") must not equal("foo")
+    cache.get("a") must not equal ("foo")
     cache.flush("a")
     cache.get("a") must equal("foo")
   }
@@ -156,7 +155,7 @@ class CacheWithFallbackToStaleDataSpec extends AnyWordSpecLike with Matchers {
     eventuallyInNSeconds(2) {
       cache.get("b") must equal(Some("foo"))
     }
-    cache.get("a") must equal(Some("baz"))  // still cached
+    cache.get("a") must equal(Some("baz")) // still cached
   }
 
   "Concurrent get should refresh only once" in {

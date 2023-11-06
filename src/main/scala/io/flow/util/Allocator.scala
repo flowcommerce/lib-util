@@ -5,9 +5,7 @@ import scala.math.BigDecimal.RoundingMode
 
 object Allocator {
 
-  /**
-    * Proportionally allocates the given amount to the elements.
-    * Returns a Seq whose size is the same as the elements.
+  /** Proportionally allocates the given amount to the elements. Returns a Seq whose size is the same as the elements.
     *
     * The sum of the returned elements is always equal to given amount.
     *
@@ -19,20 +17,18 @@ object Allocator {
     * The elements can be of either positive, negative, or both. Only their distance to 0 (the absolute value) will be
     * considered to compute the proportions
     *
-    * For instance:
-    * (6, Seq(10, 20)) => Seq(2, 4)
-    * (10, Seq(1, 1, 1), scale = 2) => Seq(3.34, 3.33, 3.33)
-    * (10, Seq(1, 1, 1)) => Seq(3.33333333333, 3.33333333333, 3.33333333333)
-    * (20, Seq(1, 1, 1), scale = 2) => Seq(6.67, 6.67, 6.66)
-    * (10, Seq(50, 6), scale = -2) => Seq(10, 0)   // 50 * 10 / 56 = 8.928571429 and 6 * 10 / 56 = 1.071428571
-    * (-6, Seq(10, 20)) => Seq(-2, -4)
-    * (6, Seq(-10, -20)) => Seq(2, 4)
-    * (-6, Seq(10, -20)) => Seq(-2, -4)
-    * (6, Seq(10, -20)) => Seq(2, 4)
+    * For instance: (6, Seq(10, 20)) => Seq(2, 4) (10, Seq(1, 1, 1), scale = 2) => Seq(3.34, 3.33, 3.33) (10, Seq(1, 1,
+    * 1)) => Seq(3.33333333333, 3.33333333333, 3.33333333333) (20, Seq(1, 1, 1), scale = 2) => Seq(6.67, 6.67, 6.66)
+    * (10, Seq(50, 6), scale = -2) => Seq(10, 0) // 50 * 10 / 56 = 8.928571429 and 6 * 10 / 56 = 1.071428571 (-6,
+    * Seq(10, 20)) => Seq(-2, -4) (6, Seq(-10, -20)) => Seq(2, 4) (-6, Seq(10, -20)) => Seq(-2, -4) (6, Seq(10, -20)) =>
+    * Seq(2, 4)
     *
-    * @param amount the amount to proportionally allocate
-    * @param proportions the proportions use to allocate the given amount
-    * @param scale the scale used to round the allocated amounts. None means no rounding.
+    * @param amount
+    *   the amount to proportionally allocate
+    * @param proportions
+    *   the proportions use to allocate the given amount
+    * @param scale
+    *   the scale used to round the allocated amounts. None means no rounding.
     */
   def proportionallyAllocate(
     amount: BigDecimal,
@@ -45,13 +41,13 @@ object Allocator {
 
   def proportionallyAllocateInts(
     amount: Int,
-    proportions: Seq[BigDecimal],
+    proportions: Seq[BigDecimal]
   ): Seq[Int] = {
     proportionallyAllocateRound(amount, proportions, scale = 0).map(_.intValue)
   }
 
-  /**
-    * @see [[proportionallyAllocate]]
+  /** @see
+    *   [[proportionallyAllocate]]
     */
   def proportionallyAllocateExact(amount: BigDecimal, proportions: Seq[BigDecimal]): Seq[BigDecimal] = {
     val positiveProportions = proportions.map(_.abs)
@@ -65,8 +61,8 @@ object Allocator {
       positiveProportions.map(v => (v * amount) / total)
   }
 
-  /**
-    * @see [[proportionallyAllocate]]
+  /** @see
+    *   [[proportionallyAllocate]]
     */
   def proportionallyAllocateRound(amount: BigDecimal, proportions: Seq[BigDecimal], scale: Int): Seq[BigDecimal] = {
     val positiveProportions = proportions.map(_.abs)

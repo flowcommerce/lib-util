@@ -6,14 +6,13 @@ import scala.concurrent.duration.FiniteDuration
 import scala.util.matching.Regex
 import scala.util.{Failure, Try}
 
-/**
-  * Concrete Config getters.
+/** Concrete Config getters.
   *
-  * Methods marked with optionalString return None when the field isn't present.
-  * They also throw exceptions if the field's value is present but has an invalid format.
+  * Methods marked with optionalString return None when the field isn't present. They also throw exceptions if the
+  * field's value is present but has an invalid format.
   *
   * Methods marked with `requiredString` follow that behavior, but they also throw if the field isn't present.
-  * */
+  */
 trait ConfigMethods { self: Config =>
   def optionalString(name: String): Option[String] = get(name).map(_.trim).filterNot(_.isEmpty)
 
@@ -59,7 +58,8 @@ trait ConfigMethods { self: Config =>
 
   def optionalFiniteDuration(name: String): Option[FiniteDuration] = {
     def logAndFail(value: String, cause: Throwable): Nothing = {
-      val msg = s"FlowError Configuration variable[$name] has invalid value[$value]. Underlying cause: ${cause.getMessage}"
+      val msg =
+        s"FlowError Configuration variable[$name] has invalid value[$value]. Underlying cause: ${cause.getMessage}"
       logger.error(msg, cause)
       throw new RuntimeException(msg, cause)
     }
@@ -97,8 +97,8 @@ private object ConfigMethods {
     val parse: String => Try[FiniteDuration] = {
       case duration.pattern(amount, unitString) =>
         Try(FiniteDuration(amount.toLong, unitString))
-          .recoverWith {
-            case _: NoSuchElementException => Failure(new NoSuchElementException(s"$unitString not supported"))
+          .recoverWith { case _: NoSuchElementException =>
+            Failure(new NoSuchElementException(s"$unitString not supported"))
           }
 
       case _ => Failure(new RuntimeException("Invalid pattern of FiniteDuration"))

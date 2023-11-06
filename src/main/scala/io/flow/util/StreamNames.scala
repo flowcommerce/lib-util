@@ -3,11 +3,11 @@ package io.flow.util
 import scala.reflect.runtime.universe._
 
 case class ApidocClass(
-                        namespace: String,
-                        service: String,
-                        version: Int,
-                        name: String
-                      ) {
+  namespace: String,
+  service: String,
+  version: Int,
+  name: String
+) {
 
   val namespaces: Seq[String] = service.split("\\.").toSeq
 
@@ -23,9 +23,7 @@ object Naming {
     ).mkString(".")
   }
 
-  /**
-    * Returns either 'production' or 'development_workstation' based on the
-    * flow environment
+  /** Returns either 'production' or 'development_workstation' based on the flow environment
     */
   def envPrefix(env: FlowEnvironment = FlowEnvironment.Current): String = {
     env match {
@@ -65,9 +63,8 @@ object StreamNames {
     name.replaceAll("([A-Z]+)([A-Z][a-z])", "$1_$2").replaceAll("([a-z\\d])([A-Z])", "$1_$2").toLowerCase
   }
 
-  /**
-    * Returns the stream name based on the type of the class (a Right), or a validation
-    * error if the class name if invalid (a Left)
+  /** Returns the stream name based on the type of the class (a Right), or a validation error if the class name if
+    * invalid (a Left)
     */
   def fromType[T: TypeTag]: Either[Seq[String], String] = {
     val name = typeOf[T].toString
@@ -76,10 +73,18 @@ object StreamNames {
       case None => {
         name match {
           case "Any" | "Nothing" => {
-            Left(Seq(s"FlowKinesisError Stream[$name] In order to consume events, you must annotate the type you are expecting as this is used to build the stream. Type should be something like io.flow.user.v0.unions.SomeEvent"))
+            Left(
+              Seq(
+                s"FlowKinesisError Stream[$name] In order to consume events, you must annotate the type you are expecting as this is used to build the stream. Type should be something like io.flow.user.v0.unions.SomeEvent"
+              )
+            )
           }
           case _ => {
-            Left(Seq(s"FlowKinesisError Stream[$name] Could not parse stream name. Expected something like io.flow.user.v0.unions.SomeEvent"))
+            Left(
+              Seq(
+                s"FlowKinesisError Stream[$name] Could not parse stream name. Expected something like io.flow.user.v0.unions.SomeEvent"
+              )
+            )
           }
         }
       }
@@ -93,8 +98,7 @@ object StreamNames {
 
 case class StreamNames(env: FlowEnvironment) {
 
-  /**
-    * Turns a full class name into the name of a kinesis stream
+  /** Turns a full class name into the name of a kinesis stream
     */
   def json(className: String): Option[String] = {
     StreamNames.parse(className).map { apidoc =>

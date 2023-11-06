@@ -8,7 +8,8 @@ import org.scalatest.wordspec.AnyWordSpecLike
 
 class DateHelperSpec extends AnyWordSpecLike with Matchers {
 
-  private[this] val jan1OffsetDT: OffsetDateTime = OffsetDateTime.from(DateTimeFormatter.ISO_OFFSET_DATE_TIME.parse("2016-01-01T08:26:18.794-05:00"))
+  private[this] val jan1OffsetDT: OffsetDateTime =
+    OffsetDateTime.from(DateTimeFormatter.ISO_OFFSET_DATE_TIME.parse("2016-01-01T08:26:18.794-05:00"))
 
   private[this] val jan1Instant: Instant = jan1OffsetDT.toInstant
 
@@ -237,7 +238,9 @@ class DateHelperSpec extends AnyWordSpecLike with Matchers {
     }
 
     "Hour minute second millis micro and nano" in {
-      ISODateTimeParser.parse("T10:15:33.141592653", Instant.from(_)) mustBe Instant.parse("1970-01-01T10:15:33.141592653Z")
+      ISODateTimeParser.parse("T10:15:33.141592653", Instant.from(_)) mustBe Instant.parse(
+        "1970-01-01T10:15:33.141592653Z"
+      )
     }
 
     "Date and hour" in {
@@ -245,7 +248,9 @@ class DateHelperSpec extends AnyWordSpecLike with Matchers {
     }
 
     "Date hour minute second millis micro and nano" in {
-      ISODateTimeParser.parse("2019-02-26T10:15:33.141592653", Instant.from(_)) mustBe Instant.parse("2019-02-26T10:15:33.141592653Z")
+      ISODateTimeParser.parse("2019-02-26T10:15:33.141592653", Instant.from(_)) mustBe Instant.parse(
+        "2019-02-26T10:15:33.141592653Z"
+      )
     }
 
     "Date hour and zulu" in {
@@ -261,7 +266,9 @@ class DateHelperSpec extends AnyWordSpecLike with Matchers {
     }
 
     "Date time and zulu" in {
-      ISODateTimeParser.parse("2019-02-26T10:15:33.141592653Z", Instant.from(_)) mustBe Instant.parse("2019-02-26T10:15:33.141592653Z")
+      ISODateTimeParser.parse("2019-02-26T10:15:33.141592653Z", Instant.from(_)) mustBe Instant.parse(
+        "2019-02-26T10:15:33.141592653Z"
+      )
     }
 
     "Hour and second offset" in {
@@ -269,11 +276,15 @@ class DateHelperSpec extends AnyWordSpecLike with Matchers {
     }
 
     "Date time and second offset" in {
-      ISODateTimeParser.parse("2019-02-26T10:15:33.141592653+02:10:20", Instant.from(_)) mustBe Instant.parse("2019-02-26T08:05:13.141592653Z")
+      ISODateTimeParser.parse("2019-02-26T10:15:33.141592653+02:10:20", Instant.from(_)) mustBe Instant.parse(
+        "2019-02-26T08:05:13.141592653Z"
+      )
     }
 
     "Date time and minute offset" in {
-      ISODateTimeParser.parse("2019-02-26T10:15:33.141592653+02:10", Instant.from(_)) mustBe Instant.parse("2019-02-26T08:05:33.141592653Z")
+      ISODateTimeParser.parse("2019-02-26T10:15:33.141592653+02:10", Instant.from(_)) mustBe Instant.parse(
+        "2019-02-26T08:05:33.141592653Z"
+      )
     }
 
     "Hour and minute offset" in {

@@ -4,41 +4,30 @@ import org.slf4j.{Logger, LoggerFactory}
 
 sealed trait FlowEnvironment
 
-/**
-  * We introduced our own environment primarily to support our
-  * dockerized environments and to integrate nicely with the flow
-  * registry. The environment is used by the registry to identify
-  * hostnames to use in either production, development or workstation,
-  * and within workstation, we needed a way to reliably identify our
-  * intended environment as opposed to the Play environment.
+/** We introduced our own environment primarily to support our dockerized environments and to integrate nicely with the
+  * flow registry. The environment is used by the registry to identify hostnames to use in either production,
+  * development or workstation, and within workstation, we needed a way to reliably identify our intended environment as
+  * opposed to the Play environment.
   *
-  * Specifically, we use sbt stage to create the run scripts for
-  * play. These scripts are the entrypoints in the docker containers
-  * we use at flow. These scripts in turn start play with the main
-  * class play.core.server.ProdServerStart which specifies:
+  * Specifically, we use sbt stage to create the run scripts for play. These scripts are the entrypoints in the docker
+  * containers we use at flow. These scripts in turn start play with the main class play.core.server.ProdServerStart
+  * which specifies:
   *
-  *     val environment = Environment(config.rootDir, process.classLoader, Mode.Prod)
+  * val environment = Environment(config.rootDir, process.classLoader, Mode.Prod)
   *
-  * Thus anytime we start play in a docker container, its internal
-  * environment will be set to production. The Flow environment is
-  * determined by:
+  * Thus anytime we start play in a docker container, its internal environment will be set to production. The Flow
+  * environment is determined by:
   *
-  *   1. an environment variable named 'FLOW_ENV'
-  *   2. a system property named 'FLOW_ENV'
-  *   3. a default of 'development'
+  *   1. an environment variable named 'FLOW_ENV' 2. a system property named 'FLOW_ENV' 3. a default of 'development'
   *
-  * Valid values for the environment are: 'development',
-  * 'workstation', 'production'
+  * Valid values for the environment are: 'development', 'workstation', 'production'
   *
   * To get the current environment:
   *
-  *     import io.flow.play.util.FlowEnvironment
+  * import io.flow.play.util.FlowEnvironment
   *
-  *     FlowEnvironment.Current match {
-  *       case FlowEnvironment.Development => ...
-  *       case FlowEnvironment.Workstation => ...
-  *       case FlowEnvironment.Production => ...
-  *     }
+  * FlowEnvironment.Current match { case FlowEnvironment.Development => ... case FlowEnvironment.Workstation => ... case
+  * FlowEnvironment.Production => ... }
   */
 object FlowEnvironment {
   private val logger: Logger = LoggerFactory.getLogger(getClass)
@@ -64,7 +53,9 @@ object FlowEnvironment {
             parse("system property", value)
           }
           case None => {
-            logger.info("Using default flow environment[development]. To override, specify environment variable or system property named[FLOW_ENV]")
+            logger.info(
+              "Using default flow environment[development]. To override, specify environment variable or system property named[FLOW_ENV]"
+            )
             FlowEnvironment.Development
           }
         }
@@ -79,7 +70,8 @@ object FlowEnvironment {
         env
       }
       case None => {
-        val message = s"Value[$value] from $source[FLOW_ENV] is invalid. Valid values are: " + all.map(_.toString).mkString(", ")
+        val message =
+          s"Value[$value] from $source[FLOW_ENV] is invalid. Valid values are: " + all.map(_.toString).mkString(", ")
         logger.error(message)
         sys.error(message)
       }
