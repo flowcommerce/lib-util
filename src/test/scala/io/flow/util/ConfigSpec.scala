@@ -52,7 +52,7 @@ class ConfigSpec extends AnyWordSpec with Matchers with TryValues {
     "the field doesn't match the pattern" should {
       "fail" in {
         exceptionMessage("invalid-pattern") mustBe
-          "FlowError Configuration variable[invalid-pattern] has invalid value[about 5 minutes]. Underlying cause: Invalid pattern of FiniteDuration"
+          "FlowError Configuration variable[invalid-pattern] has invalid value[about 5 minutes]. Underlying cause: Invalid pattern of FiniteDuration": Unit
 
         exceptionMessage("invalid-pattern-2") mustBe
           "FlowError Configuration variable[invalid-pattern-2] has invalid value[n minutes]. Underlying cause: Invalid pattern of FiniteDuration"

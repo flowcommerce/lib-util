@@ -102,7 +102,7 @@ class AllocatorSpec extends AnyWordSpec with Matchers with ScalaCheckDrivenPrope
     "0 amount invariant" in {
       forAll(elementsGen, scaleGen, minSuccessful(10000)) { case (elements, scale) =>
         val res = Allocator.proportionallyAllocate(0, elements, scale = Some(scale))
-        res.size shouldBe elements.size
+        res.size shouldBe elements.size: Unit
         res shouldBe Seq.fill(elements.size)(0)
       }
     }
@@ -110,8 +110,8 @@ class AllocatorSpec extends AnyWordSpec with Matchers with ScalaCheckDrivenPrope
     "size, signum and sum invariant" in {
       forAll(amountGen, elementsGen, scaleGen, minSuccessful(10000)) { case (amount, elements, scale) =>
         val res = Allocator.proportionallyAllocate(amount, elements, scale = Some(scale))
-        res.size shouldBe elements.size
-        res.map(_.signum).distinct.filter(_ != 0) shouldBe Seq(amount.signum)
+        res.size shouldBe elements.size: Unit
+        res.map(_.signum).distinct.filter(_ != 0) shouldBe Seq(amount.signum): Unit
         res.sum shouldBe amount
       }
     }
@@ -119,7 +119,7 @@ class AllocatorSpec extends AnyWordSpec with Matchers with ScalaCheckDrivenPrope
     "size, sum invariant for ints" in {
       forAll(amountIntGen, elementsGen, minSuccessful(10000)) { case (amount, elements) =>
         val res = Allocator.proportionallyAllocateInts(amount, elements)
-        res.size shouldBe elements.size
+        res.size shouldBe elements.size: Unit
         res.sum shouldBe amount
       }
     }
@@ -127,8 +127,8 @@ class AllocatorSpec extends AnyWordSpec with Matchers with ScalaCheckDrivenPrope
     "proportionallyAllocateInts" in {
       def test(proportions: Seq[BigDecimal]) = Allocator.proportionallyAllocateInts(100, proportions)
 
-      test(Seq(1, 1)) shouldBe Seq(50, 50)
-      test(Seq(1, 1, 1)) shouldBe Seq(34, 33, 33)
+      test(Seq(1, 1)) shouldBe Seq(50, 50): Unit
+      test(Seq(1, 1, 1)) shouldBe Seq(34, 33, 33): Unit
       test(Seq(1, 2)) shouldBe Seq(33, 67)
     }
   }

@@ -11,6 +11,7 @@ import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.concurrent.ExecutionContext.Implicits.global
 
+@nowarn
 class SCaffeineSpec extends AnyWordSpecLike with Matchers with BeforeAndAfterEach {
 
   val callCount = new AtomicInteger(0)
@@ -24,7 +25,6 @@ class SCaffeineSpec extends AnyWordSpecLike with Matchers with BeforeAndAfterEac
     ret
   }
 
-  @nowarn
   def failingFun(str: String): Int = {
     callCount.getAndIncrement()
     Thread.sleep(tickMillis)

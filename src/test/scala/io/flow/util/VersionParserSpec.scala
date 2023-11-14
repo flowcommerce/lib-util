@@ -3,6 +3,9 @@ package io.flow.util
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
+import scala.annotation.nowarn
+
+@nowarn
 class VersionParserSpec extends AnyWordSpec with Matchers {
 
   import VersionParser.parse

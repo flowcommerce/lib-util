@@ -3,6 +3,9 @@ package io.flow.util
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
 
+import scala.annotation.nowarn
+
+@nowarn
 class IdGeneratorSpec extends AnyWordSpecLike with Matchers {
 
   private[this] val MinimumRandomLength = 16

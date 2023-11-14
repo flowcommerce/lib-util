@@ -130,7 +130,7 @@ class DateHelperSpec extends AnyWordSpecLike with Matchers {
     }
 
     "filenameDateTime" in {
-      DateHelper.filenameDateTime(jan1ZonedDT) mustBe "20160101.082618.794"
+      DateHelper.filenameDateTime(jan1ZonedDT) mustBe "20160101.082618.794": Unit
       DateHelper.filenameDateTime(jan1ZonedDT.withZoneSameInstant(ZoneOffset.UTC)) mustBe "20160101.132618.794"
     }
   }
@@ -170,7 +170,7 @@ class DateHelperSpec extends AnyWordSpecLike with Matchers {
     }
 
     "currentYear" in {
-      DateHelper.currentYear >= 2016
+      DateHelper.currentYear >= 2016: Unit
       DateHelper.currentYear <= OffsetDateTime.now.getYear + 1
     }
 

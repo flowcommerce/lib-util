@@ -6,8 +6,8 @@ import org.scalatest.wordspec.AnyWordSpecLike
 class FlowEnvironmentSpec extends AnyWordSpecLike with Matchers {
 
   "fromString" in {
-    FlowEnvironment.fromString("development") must be(Some(FlowEnvironment.Development))
-    FlowEnvironment.fromString("production") must be(Some(FlowEnvironment.Production))
+    FlowEnvironment.fromString("development") must be(Some(FlowEnvironment.Development)): Unit
+    FlowEnvironment.fromString("production") must be(Some(FlowEnvironment.Production)): Unit
     FlowEnvironment.fromString("workstation") must be(Some(FlowEnvironment.Workstation))
   }
 
@@ -16,8 +16,8 @@ class FlowEnvironmentSpec extends AnyWordSpecLike with Matchers {
   }
 
   "parse" in {
-    FlowEnvironment.parse("test", "development") must be(FlowEnvironment.Development)
-    FlowEnvironment.parse("test", "production") must be(FlowEnvironment.Production)
+    FlowEnvironment.parse("test", "development") must be(FlowEnvironment.Development): Unit
+    FlowEnvironment.parse("test", "production") must be(FlowEnvironment.Production): Unit
     intercept[Throwable] {
       FlowEnvironment.parse("test", "other")
     }.getMessage must be(

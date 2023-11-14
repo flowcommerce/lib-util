@@ -19,7 +19,7 @@ class StreamNamesSpec extends AnyWordSpecLike with Matchers {
   }
 
   "development and workstation environments map to same stream name" in {
-    dev.json("io.flow.sample.v0.models.Event") must equal(Some("development_workstation.sample.v0.event.json"))
+    dev.json("io.flow.sample.v0.models.Event") must equal(Some("development_workstation.sample.v0.event.json")): Unit
     ws.json("io.flow.sample.v0.models.Event") must equal(Some("development_workstation.sample.v0.event.json"))
   }
 
@@ -52,7 +52,7 @@ class StreamNamesSpec extends AnyWordSpecLike with Matchers {
           "FlowKinesisError Stream[Nothing] In order to consume events, you must annotate the type you are expecting as this is used to build the stream. Type should be something like io.flow.user.v0.unions.SomeEvent"
         )
       )
-    )
+    ): Unit
     StreamNames.fromType[String] must be(
       Left(
         List(
@@ -72,7 +72,7 @@ class StreamNamesSpec extends AnyWordSpecLike with Matchers {
           name = "organization_event"
         )
       )
-    )
+    ): Unit
 
     StreamNames.parse("io.flow.organization.event.v0.models.OrganizationEvent").get.namespaces must equal(
       Seq("organization", "event")
