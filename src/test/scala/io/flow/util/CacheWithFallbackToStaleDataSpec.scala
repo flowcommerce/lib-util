@@ -10,6 +10,9 @@ import scala.concurrent.{Await, ExecutionContext, ExecutionContextExecutor, Futu
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
 
+import scala.annotation.nowarn
+
+@nowarn
 class CacheWithFallbackToStaleDataSpec extends AnyWordSpecLike with Matchers {
   private implicit val executionContext: ExecutionContextExecutor = ExecutionContext.global
 

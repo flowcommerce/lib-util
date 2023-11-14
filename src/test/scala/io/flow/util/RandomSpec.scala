@@ -10,8 +10,8 @@ class RandomSpec extends AnyWordSpecLike with Matchers {
 
   def validate(alphabet: String, values: Seq[String]): Unit = {
     val letters = alphabet.split("")
-    values.distinct.length must be(values.length)
-    values.forall { _.length == Length } must be(true)
+    values.distinct.length must be(values.length): Unit
+    values.forall { _.length == Length } must be(true): Unit
 
     values.foreach { v =>
       v.split("").find { l => !letters.contains(l) } match {
@@ -74,13 +74,13 @@ class RandomSpec extends AnyWordSpecLike with Matchers {
 
   "positiveInt" in {
     val values = 1.to(100).map { _ => random.positiveInt() }
-    values.distinct.length must be(values.length)
+    values.distinct.length must be(values.length): Unit
     values.forall { i => i > 0 } must be(true)
   }
 
   "positiveLong" in {
     val values = 1.to(100).map { _ => random.positiveLong() }
-    values.distinct.length must be(values.length)
+    values.distinct.length must be(values.length): Unit
     values.forall { i => i > 0 } must be(true)
   }
 
