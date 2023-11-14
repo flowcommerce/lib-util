@@ -24,7 +24,7 @@ class ConfigSpec extends AnyWordSpec with Matchers with TryValues {
     "invalid-unit" -> "5 years",
     "zero" -> "0 minutes",
     "valid-value-1" -> "10 minutes",
-    "valid-value-2" -> "1 second"
+    "valid-value-2" -> "1 second",
   )
 
   def getDuration(name: String): Option[FiniteDuration] = {
@@ -93,7 +93,7 @@ class EnvironmentConfigLikeSpec extends AnyWordSpec with Matchers {
     override protected def source(): Map[String, String] = Map(
       "HELLO_WORLD_FOO" -> "bar, baz",
       "HELLO_WORLD_BAR_BAZ" -> "foo",
-      "HELLO_ME" -> "w00t"
+      "HELLO_ME" -> "w00t",
     )
   }
 
@@ -103,7 +103,7 @@ class EnvironmentConfigLikeSpec extends AnyWordSpec with Matchers {
 
       result mustBe Map(
         "foo" -> List("bar", "baz"),
-        "bar.baz" -> List("foo")
+        "bar.baz" -> List("foo"),
       )
     }
   }

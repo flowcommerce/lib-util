@@ -20,7 +20,7 @@ case class IdGenerator(prefix: String) {
   assert(prefix.trim == prefix, s"prefix[$prefix] must be trimmed")
   assert(
     prefix.length == IdGenerator.PrefixLength,
-    s"prefix[$prefix] must be ${IdGenerator.PrefixLength} characters long"
+    s"prefix[$prefix] must be ${IdGenerator.PrefixLength} characters long",
   )
   assert(!BadWords.contains(prefix), s"prefix[$prefix] is on the black list and cannot be used")
 

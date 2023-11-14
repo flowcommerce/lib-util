@@ -239,7 +239,7 @@ class DateHelperSpec extends AnyWordSpecLike with Matchers {
 
     "Hour minute second millis micro and nano" in {
       ISODateTimeParser.parse("T10:15:33.141592653", Instant.from(_)) mustBe Instant.parse(
-        "1970-01-01T10:15:33.141592653Z"
+        "1970-01-01T10:15:33.141592653Z",
       )
     }
 
@@ -249,7 +249,7 @@ class DateHelperSpec extends AnyWordSpecLike with Matchers {
 
     "Date hour minute second millis micro and nano" in {
       ISODateTimeParser.parse("2019-02-26T10:15:33.141592653", Instant.from(_)) mustBe Instant.parse(
-        "2019-02-26T10:15:33.141592653Z"
+        "2019-02-26T10:15:33.141592653Z",
       )
     }
 
@@ -267,7 +267,7 @@ class DateHelperSpec extends AnyWordSpecLike with Matchers {
 
     "Date time and zulu" in {
       ISODateTimeParser.parse("2019-02-26T10:15:33.141592653Z", Instant.from(_)) mustBe Instant.parse(
-        "2019-02-26T10:15:33.141592653Z"
+        "2019-02-26T10:15:33.141592653Z",
       )
     }
 
@@ -277,13 +277,13 @@ class DateHelperSpec extends AnyWordSpecLike with Matchers {
 
     "Date time and second offset" in {
       ISODateTimeParser.parse("2019-02-26T10:15:33.141592653+02:10:20", Instant.from(_)) mustBe Instant.parse(
-        "2019-02-26T08:05:13.141592653Z"
+        "2019-02-26T08:05:13.141592653Z",
       )
     }
 
     "Date time and minute offset" in {
       ISODateTimeParser.parse("2019-02-26T10:15:33.141592653+02:10", Instant.from(_)) mustBe Instant.parse(
-        "2019-02-26T08:05:33.141592653Z"
+        "2019-02-26T08:05:33.141592653Z",
       )
     }
 

@@ -558,6 +558,6 @@ object BadWords {
     "willy",
     "wtf",
     "xrated",
-    "xxx"
+    "xxx",
   )
 }

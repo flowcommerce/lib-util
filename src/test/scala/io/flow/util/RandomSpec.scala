@@ -43,14 +43,14 @@ class RandomSpec extends AnyWordSpecLike with Matchers {
   "lowercaseAlpha" in {
     validate(
       "abcdefghijklmnopqrstuvwxyz",
-      1.to(100).map { _ => random.lowercaseAlpha(Length) }
+      1.to(100).map { _ => random.lowercaseAlpha(Length) },
     )
   }
 
   "alpha" in {
     validate(
       "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
-      1.to(100).map { _ => random.alpha(Length) }
+      1.to(100).map { _ => random.alpha(Length) },
     )
   }
 
@@ -58,7 +58,7 @@ class RandomSpec extends AnyWordSpecLike with Matchers {
     val values = 1.to(100).map { _ => random.alphaNumeric(Length) }
     validate(
       s"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
-      values
+      values,
     )
     validateDoesNotStartWithNumber(values)
   }
@@ -67,7 +67,7 @@ class RandomSpec extends AnyWordSpecLike with Matchers {
     val values = 1.to(100).map { _ => random.alphaNumericNonAmbiguous(Length) }
     validate(
       s"abcdefghijkmnpqrstuvwxyzACEFHJKLMNPRTUVWXY3479",
-      values
+      values,
     )
     validateDoesNotStartWithNumber(values)
   }

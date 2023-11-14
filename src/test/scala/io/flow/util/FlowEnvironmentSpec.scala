@@ -21,7 +21,7 @@ class FlowEnvironmentSpec extends AnyWordSpecLike with Matchers {
     intercept[Throwable] {
       FlowEnvironment.parse("test", "other")
     }.getMessage must be(
-      "Value[other] from test[FLOW_ENV] is invalid. Valid values are: development, production, workstation"
+      "Value[other] from test[FLOW_ENV] is invalid. Valid values are: development, production, workstation",
     )
   }
 

@@ -141,7 +141,7 @@ class SCaffeineSpec extends AnyWordSpecLike with Matchers with BeforeAndAfterEac
       "use allLoader" in {
         val cache = Scaffeine().buildAsync[String, Int](
           loader = (_: String) => 0,
-          allLoader = Some((keys: Iterable[String]) => keys.map(key => key -> key.length).toMap)
+          allLoader = Some((keys: Iterable[String]) => keys.map(key => key -> key.length).toMap),
         )
         val (result, _) = time[Map[String, Int]](await(cache.getAll(Seq("two", "three", "four"))))
         result.size mustBe 3

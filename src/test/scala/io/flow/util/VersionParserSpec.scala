@@ -27,7 +27,7 @@ class VersionParserSpec extends AnyWordSpec with Matchers {
 
   "semver with hash" in {
     parse("2.1.0+ab") must be(
-      Version("2.1.0+ab", Seq(Tag.Semver(2, 1, 0), Tag.Text("ab")))
+      Version("2.1.0+ab", Seq(Tag.Semver(2, 1, 0), Tag.Text("ab"))),
     )
   }
 
@@ -54,9 +54,9 @@ class VersionParserSpec extends AnyWordSpec with Matchers {
           Tag.Semver(9, 4, 0),
           Tag.Semver(1201, 0, 0),
           Tag.Text("jdbc"),
-          Tag.Semver(41, 0, 0)
-        )
-      )
+          Tag.Semver(41, 0, 0),
+        ),
+      ),
     )
     parse("42.1.3") > VersionParser.parse("9.4.1212") must be(true)
   }
@@ -68,9 +68,9 @@ class VersionParserSpec extends AnyWordSpec with Matchers {
         Seq(
           Tag.Semver(1, 4, 0),
           Tag.Text("M"),
-          Tag.Semver(4, 0, 0)
-        )
-      )
+          Tag.Semver(4, 0, 0),
+        ),
+      ),
     )
   }
 
@@ -80,9 +80,9 @@ class VersionParserSpec extends AnyWordSpec with Matchers {
         "2.9.1.final",
         Seq(
           Tag.Semver(2, 9, 1),
-          Tag.Text("final")
-        )
-      )
+          Tag.Text("final"),
+        ),
+      ),
     )
   }
 

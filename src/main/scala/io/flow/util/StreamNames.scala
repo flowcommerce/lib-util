@@ -6,7 +6,7 @@ case class ApidocClass(
   namespace: String,
   service: String,
   version: Int,
-  name: String
+  name: String,
 ) {
 
   val namespaces: Seq[String] = service.split("\\.").toSeq
@@ -19,7 +19,7 @@ object Naming {
     Seq(
       "kinesis",
       streamName,
-      appName
+      appName,
     ).mkString(".")
   }
 
@@ -46,8 +46,8 @@ object StreamNames {
             namespace = namespace,
             service = service,
             version = version.toInt,
-            name = toSnakeCase(n)
-          )
+            name = toSnakeCase(n),
+          ),
         )
       }
 
@@ -75,15 +75,15 @@ object StreamNames {
           case "Any" | "Nothing" => {
             Left(
               Seq(
-                s"FlowKinesisError Stream[$name] In order to consume events, you must annotate the type you are expecting as this is used to build the stream. Type should be something like io.flow.user.v0.unions.SomeEvent"
-              )
+                s"FlowKinesisError Stream[$name] In order to consume events, you must annotate the type you are expecting as this is used to build the stream. Type should be something like io.flow.user.v0.unions.SomeEvent",
+              ),
             )
           }
           case _ => {
             Left(
               Seq(
-                s"FlowKinesisError Stream[$name] Could not parse stream name. Expected something like io.flow.user.v0.unions.SomeEvent"
-              )
+                s"FlowKinesisError Stream[$name] Could not parse stream name. Expected something like io.flow.user.v0.unions.SomeEvent",
+              ),
             )
           }
         }
