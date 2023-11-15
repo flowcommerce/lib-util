@@ -48,7 +48,7 @@ object RegistryConstants {
     EnvironmentConfig.optionalString(WorkstationHostVariableName).getOrElse {
       PropertyConfig.optionalString(WorkstationHostVariableName).getOrElse {
         logger.info(
-          s"[${getClass.getName}] defaulting workstationHost to '$DefaultWorkstationHost' (can override via env var[$WorkstationHostVariableName])"
+          s"[${getClass.getName}] defaulting workstationHost to '$DefaultWorkstationHost' (can override via env var[$WorkstationHostVariableName])",
         )
         DefaultWorkstationHost
       }

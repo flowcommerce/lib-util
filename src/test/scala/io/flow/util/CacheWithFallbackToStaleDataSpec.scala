@@ -38,7 +38,7 @@ class CacheWithFallbackToStaleDataSpec extends AnyWordSpecLike with Matchers {
         data.put(
           key,
           Option(nextValues.get(key))
-            .getOrElse(Option(data.get(key)).getOrElse(sys.error(s"0 - Missing test data for key[$key]")))
+            .getOrElse(Option(data.get(key)).getOrElse(sys.error(s"0 - Missing test data for key[$key]"))),
         )
       }
 

@@ -54,7 +54,7 @@ object FlowEnvironment {
           }
           case None => {
             logger.info(
-              "Using default flow environment[development]. To override, specify environment variable or system property named[FLOW_ENV]"
+              "Using default flow environment[development]. To override, specify environment variable or system property named[FLOW_ENV]",
             )
             FlowEnvironment.Development
           }

@@ -25,13 +25,13 @@ class StreamNamesSpec extends AnyWordSpecLike with Matchers {
 
   "validate a service with multi name" in {
     dev.json("io.flow.sample.multi.v0.models.Event") must equal(
-      Some("development_workstation.sample.multi.v0.event.json")
+      Some("development_workstation.sample.multi.v0.event.json"),
     )
   }
 
   "validate a service with long multi name" in {
     dev.json("io.flow.sample.multia.multib.v0.models.Event") must equal(
-      Some("development_workstation.sample.multia.multib.v0.event.json")
+      Some("development_workstation.sample.multia.multib.v0.event.json"),
     )
   }
 
@@ -41,7 +41,7 @@ class StreamNamesSpec extends AnyWordSpecLike with Matchers {
 
   "fromType returns proper name for union type" in {
     StreamNames.fromType[TestEvent] must be(
-      Right("development_workstation.util.test.v0.test_event.json")
+      Right("development_workstation.util.test.v0.test_event.json"),
     )
   }
 
@@ -49,16 +49,16 @@ class StreamNamesSpec extends AnyWordSpecLike with Matchers {
     StreamNames.fromType must be(
       Left(
         List(
-          "FlowKinesisError Stream[Nothing] In order to consume events, you must annotate the type you are expecting as this is used to build the stream. Type should be something like io.flow.user.v0.unions.SomeEvent"
-        )
-      )
+          "FlowKinesisError Stream[Nothing] In order to consume events, you must annotate the type you are expecting as this is used to build the stream. Type should be something like io.flow.user.v0.unions.SomeEvent",
+        ),
+      ),
     ): Unit
     StreamNames.fromType[String] must be(
       Left(
         List(
-          "FlowKinesisError Stream[String] Could not parse stream name. Expected something like io.flow.user.v0.unions.SomeEvent"
-        )
-      )
+          "FlowKinesisError Stream[String] Could not parse stream name. Expected something like io.flow.user.v0.unions.SomeEvent",
+        ),
+      ),
     )
   }
 
@@ -69,13 +69,13 @@ class StreamNamesSpec extends AnyWordSpecLike with Matchers {
           namespace = "io.flow",
           service = "organization.event",
           version = 0,
-          name = "organization_event"
-        )
-      )
+          name = "organization_event",
+        ),
+      ),
     ): Unit
 
     StreamNames.parse("io.flow.organization.event.v0.models.OrganizationEvent").get.namespaces must equal(
-      Seq("organization", "event")
+      Seq("organization", "event"),
     )
   }
 

@@ -21,15 +21,15 @@ trait CacheWithFallbackToStaleData[K, V] extends Shutdownable {
     .expireAfter(
       create = computeExpiry,
       update = (k: K, v: V, _: FiniteDuration) => computeExpiry(k, v),
-      read = (_: K, _: V, d: FiniteDuration) => d
+      read = (_: K, _: V, d: FiniteDuration) => d,
     )
     .build[K, V](
-      loader = refresh _
+      loader = refresh _,
     )
 
   private[this] def bootstrap() = {
     Try(
-      cache.putAll(initialContents().toMap)
+      cache.putAll(initialContents().toMap),
     ) match {
       case Success(_) => ()
       case Failure(f) => logger.warn("Failed to bootstrap cache", f)

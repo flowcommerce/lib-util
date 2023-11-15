@@ -33,7 +33,7 @@ object Allocator {
   def proportionallyAllocate(
     amount: BigDecimal,
     proportions: Seq[BigDecimal],
-    scale: Option[Int] = None
+    scale: Option[Int] = None,
   ): Seq[BigDecimal] = scale match {
     case None => proportionallyAllocateExact(amount, proportions)
     case Some(s) => proportionallyAllocateRound(amount, proportions, s)
@@ -41,7 +41,7 @@ object Allocator {
 
   def proportionallyAllocateInts(
     amount: Int,
-    proportions: Seq[BigDecimal]
+    proportions: Seq[BigDecimal],
   ): Seq[Int] = {
     proportionallyAllocateRound(amount, proportions, scale = 0).map(_.intValue)
   }
