@@ -11,11 +11,10 @@ import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.concurrent.ExecutionContext.Implicits.global
 
-@nowarn
 class SCaffeineSpec extends AnyWordSpecLike with Matchers with BeforeAndAfterEach {
 
   val callCount = new AtomicInteger(0)
-  val tick = 150.millis
+  val tick = 250.millis
   val tickFuzz = 50L
   val tickMillis = tick.toMillis
 
@@ -55,7 +54,7 @@ class SCaffeineSpec extends AnyWordSpecLike with Matchers with BeforeAndAfterEac
 
       "getIfPresent does not load in the background" in {
         val cache = Scaffeine().build[String, Int](loader = { s: String => s.length })
-        cache.getIfPresent("one") mustBe None
+        cache.getIfPresent("one") mustBe None: Unit
         Thread.sleep(tickFuzz)
         cache.getIfPresent("one") mustBe None
       }
@@ -63,9 +62,9 @@ class SCaffeineSpec extends AnyWordSpecLike with Matchers with BeforeAndAfterEac
       "getIfPresent with refresh loads in the background" in {
         val cache = Scaffeine().build[String, Int](loader = { s: String => s.length })
         cache.getIfPresent("one").orElse {
-          cache.refresh("one")
+          cache.refresh("one"): Unit
           None
-        } mustBe None
+        } mustBe None: Unit
         Thread.sleep(tickFuzz)
         cache.getIfPresent("one") mustBe Some(3)
       }
@@ -73,24 +72,24 @@ class SCaffeineSpec extends AnyWordSpecLike with Matchers with BeforeAndAfterEac
       "refresh a cache value asynchronously" in {
         val cache = Scaffeine().refreshAfterWrite(tick).build[String, Int](loader = fun _)
         val (result1, ms1) = time[Int](cache.get("one"))
-        result1 mustBe 3
-        ms1 must be(tickMillis +- tickFuzz)
+        result1 mustBe 3: Unit
+        ms1 must be(tickMillis +- tickFuzz): Unit
 
         // wait for key TTL to be expire
         Thread.sleep(tickMillis + tickFuzz)
 
         // lookup key will return old value and trigger refresh in the background
         val (result2, ms2) = time[Int](cache.get("one"))
-        result2 mustBe 3
-        ms2 must be < tickFuzz
+        result2 mustBe 3: Unit
+        ms2 must be < tickFuzz: Unit
 
         // wait for background refresh to have finished
         Thread.sleep(tickMillis + tickFuzz)
 
         // lookup will now return new value
         val (result3, ms3) = time[Int](cache.get("one"))
-        result3 mustBe 4
-        ms3 must be < tickFuzz
+        result3 mustBe 4: Unit
+        ms3 must be < tickFuzz: Unit
 
         // verify that lookup function was called twice
         callCount.get mustBe 2
@@ -98,34 +97,34 @@ class SCaffeineSpec extends AnyWordSpecLike with Matchers with BeforeAndAfterEac
 
       "throw exception on first load" in {
         val cache = Scaffeine().build[String, Int](loader = failingFun _)
-        a[RuntimeException] should be thrownBy cache.get("one")
-        a[RuntimeException] should be thrownBy cache.get("one")
+        a[RuntimeException] should be thrownBy cache.get("one"): Unit
+        a[RuntimeException] should be thrownBy cache.get("one"): Unit
         callCount.get mustBe 2
       }
 
       "return previous value when an exception is thrown on reload" in {
         val cache = Scaffeine().refreshAfterWrite(tick).build[String, Int](loader = reloadFailingFun _)
         val (result1, ms1) = time[Int](cache.get("one"))
-        result1 mustBe 3
-        ms1 must be(tickMillis +- tickFuzz)
+        result1 mustBe 3: Unit
+        ms1 must be(tickMillis +- tickFuzz): Unit
 
         // wait for key TTL to be expire
         Thread.sleep(tickMillis + tickFuzz)
 
         // lookup key will return old value and trigger refresh in the background
         val (result2, ms2) = time[Int](cache.get("one"))
-        result2 mustBe 3
-        ms2 must be < tickFuzz
+        result2 mustBe 3: Unit
+        ms2 must be < tickFuzz: Unit
 
         // wait for background refresh to have finished
         Thread.sleep(tickMillis + tickFuzz)
 
         // verify that lookup function was called twice
-        callCount.get mustBe 2
+        callCount.get mustBe 2: Unit
 
         // lookup will still return cached initial value
         val (result3, ms3) = time[Int](cache.get("one"))
-        result3 mustBe 3
+        result3 mustBe 3: Unit
         ms3 must be < tickFuzz
       }
     }
@@ -134,7 +133,7 @@ class SCaffeineSpec extends AnyWordSpecLike with Matchers with BeforeAndAfterEac
       "return the expected cache value" in {
         val cache = Scaffeine().buildAsync[String, Int](loader = { s: String => s.length })
         val (result, ms) = time[Int](await(cache.get("one")))
-        result mustBe 3
+        result mustBe 3: Unit
         ms must be < tickFuzz
       }
 
@@ -144,35 +143,35 @@ class SCaffeineSpec extends AnyWordSpecLike with Matchers with BeforeAndAfterEac
           allLoader = Some((keys: Iterable[String]) => keys.map(key => key -> key.length).toMap),
         )
         val (result, _) = time[Map[String, Int]](await(cache.getAll(Seq("two", "three", "four"))))
-        result.size mustBe 3
-        result.get("two") mustBe Some(3)
-        result.get("three") mustBe Some(5)
+        result.size mustBe 3: Unit
+        result.get("two") mustBe Some(3): Unit
+        result.get("three") mustBe Some(5): Unit
         result.get("four") mustBe Some(4)
       }
 
       "refresh a value asynchronously" in {
         val cache = Scaffeine().refreshAfterWrite(tick).buildAsync[String, Int](loader = fun _)
         val (f1, msf1) = time[Future[Int]](cache.get("one"))
-        msf1 must be < tickFuzz
+        msf1 must be < tickFuzz: Unit
         val (result1, ms1) = time[Int](await(f1))
-        result1 mustBe 3
-        ms1 must be(tickMillis +- tickFuzz)
+        result1 mustBe 3: Unit
+        ms1 must be(tickMillis +- tickFuzz): Unit
 
         // wait for key TTL to be expire
         Thread.sleep(tickMillis + tickFuzz)
 
         // lookup key will return old value and trigger refresh in the background
         val (result2, ms2) = time[Int](await(cache.get("one")))
-        result2 mustBe 3
-        ms2 must be < tickFuzz
+        result2 mustBe 3: Unit
+        ms2 must be < tickFuzz: Unit
 
         // wait for background refresh to have finished
         Thread.sleep(tickMillis + tickFuzz)
 
         // lookup will now return new value
         val (result3, ms3) = time[Int](await(cache.get("one")))
-        result3 mustBe 4
-        ms3 must be < tickFuzz
+        result3 mustBe 4: Unit
+        ms3 must be < tickFuzz: Unit
 
         // verify that lookup function was called twice
         callCount.get mustBe 2
@@ -196,15 +195,15 @@ class SCaffeineSpec extends AnyWordSpecLike with Matchers with BeforeAndAfterEac
 
         val cache = Scaffeine().expireAfter(create _, update _, read _).buildAsync[String, Int](loader = fun _)
         val (result1, ms1) = time[Int](await(cache.get("one")))
-        result1 mustBe 3
-        ms1 must be(tickMillis +- tickFuzz)
+        result1 mustBe 3: Unit
+        ms1 must be(tickMillis +- tickFuzz): Unit
 
         // wait for key TTL to be expire
         Thread.sleep(tickMillis + tickFuzz)
 
         // lookup key will trigger load of value
         val (result2, ms2) = time[Int](await(cache.get("one")))
-        result2 mustBe 4
+        result2 mustBe 4: Unit
         ms2 must be(tickMillis +- tickFuzz)
       }
 
@@ -212,44 +211,44 @@ class SCaffeineSpec extends AnyWordSpecLike with Matchers with BeforeAndAfterEac
         val cache = Scaffeine().buildAsync[String, Int](loader = failingFun _)
         val (f1, msf1) = time[Future[Int]](cache.get("one"))
         val (f2, msf2) = time[Future[Int]](cache.get("one"))
-        msf1 must be < tickFuzz
-        msf2 must be < tickFuzz
+        msf1 must be < tickFuzz: Unit
+        msf2 must be < tickFuzz: Unit
 
-        a[RuntimeException] should be thrownBy await(f1)
-        a[RuntimeException] should be thrownBy await(f2)
+        a[RuntimeException] should be thrownBy await(f1): Unit
+        a[RuntimeException] should be thrownBy await(f2): Unit
 
         Thread.sleep(tickFuzz)
-        callCount.get mustBe 1
+        callCount.get mustBe 1: Unit
 
         val (f3, msf3) = time[Future[Int]](cache.get("one"))
-        msf3 must be < tickFuzz
-        a[RuntimeException] should be thrownBy await(f3)
+        msf3 must be < tickFuzz: Unit
+        a[RuntimeException] should be thrownBy await(f3): Unit
         callCount.get mustBe 2
       }
 
       "return previous value when an exception is thrown on reload" in {
         val cache = Scaffeine().refreshAfterWrite(tick).buildAsync[String, Int](loader = reloadFailingFun _)
         val (result1, ms1) = time[Int](await(cache.get("one")))
-        result1 mustBe 3
-        ms1 must be(tickMillis +- tickFuzz)
+        result1 mustBe 3: Unit
+        ms1 must be(tickMillis +- tickFuzz): Unit
 
         // wait for key TTL to be expire
         Thread.sleep(tickMillis + tickFuzz)
 
         // lookup key will return old value and trigger refresh in the background
         val (result2, ms2) = time[Int](await(cache.get("one")))
-        result2 mustBe 3
-        ms2 must be < tickFuzz
+        result2 mustBe 3: Unit
+        ms2 must be < tickFuzz: Unit
 
         // wait for background refresh to have finished
         Thread.sleep(tickMillis + tickFuzz)
 
         // verify that lookup function was called twice
-        callCount.get mustBe 2
+        callCount.get mustBe 2: Unit
 
         // lookup will still return cached initial value
         val (result3, ms3) = time[Int](await(cache.get("one")))
-        result3 mustBe 3
+        result3 mustBe 3: Unit
         ms3 must be < tickFuzz
       }
     }
@@ -259,27 +258,27 @@ class SCaffeineSpec extends AnyWordSpecLike with Matchers with BeforeAndAfterEac
         val asyncCache = Scaffeine().refreshAfterWrite(tick).buildAsync[String, Int](loader = fun _)
         val syncCache = asyncCache.synchronous()
         val (result1, ms1) = time[Int](await(asyncCache.get("one")))
-        result1 mustBe 3
-        ms1 must be(tickMillis +- tickFuzz)
+        result1 mustBe 3: Unit
+        ms1 must be(tickMillis +- tickFuzz): Unit
 
         val (result2, ms2) = time[Int](syncCache.get("one"))
-        result2 mustBe 3
-        ms2 must be < tickFuzz
+        result2 mustBe 3: Unit
+        ms2 must be < tickFuzz: Unit
 
         // wait for key TTL to be expire
         Thread.sleep(tickMillis + tickFuzz)
 
         // lookup key will return old value and trigger refresh in the background
         val (result3, ms3) = time[Int](await(asyncCache.get("one")))
-        result3 mustBe 3
-        ms3 must be < tickFuzz
+        result3 mustBe 3: Unit
+        ms3 must be < tickFuzz: Unit
 
         // wait for background refresh to have finished
         Thread.sleep(tickMillis + tickFuzz)
 
         val (result4, ms4) = time[Int](syncCache.get("one"))
-        result4 mustBe 4
-        ms4 must be < tickFuzz
+        result4 mustBe 4: Unit
+        ms4 must be < tickFuzz: Unit
 
         callCount.get mustBe 2
       }
@@ -288,27 +287,27 @@ class SCaffeineSpec extends AnyWordSpecLike with Matchers with BeforeAndAfterEac
         val asyncCache = Scaffeine().refreshAfterWrite(tick).buildAsync[String, Int](loader = fun _)
         val syncCache = asyncCache.synchronous()
         val (result1, ms1) = time[Int](syncCache.get("one"))
-        result1 mustBe 3
-        ms1 must be(tickMillis +- tickFuzz)
+        result1 mustBe 3: Unit
+        ms1 must be(tickMillis +- tickFuzz): Unit
 
         val (result2, ms2) = time[Int](await(asyncCache.get("one")))
-        result2 mustBe 3
-        ms2 must be < tickFuzz
+        result2 mustBe 3: Unit
+        ms2 must be < tickFuzz: Unit
 
         // wait for key TTL to be expire
         Thread.sleep(tickMillis + tickFuzz)
 
         // lookup key will return old value and trigger refresh in the background
         val (result3, ms3) = time[Int](syncCache.get("one"))
-        result3 mustBe 3
-        ms3 must be < tickFuzz
+        result3 mustBe 3: Unit
+        ms3 must be < tickFuzz: Unit
 
         // wait for background refresh to have finished
         Thread.sleep(tickMillis + tickFuzz)
 
         val (result4, ms4) = time[Int](await(asyncCache.get("one")))
-        result4 mustBe 4
-        ms4 must be < tickFuzz
+        result4 mustBe 4: Unit
+        ms4 must be < tickFuzz: Unit
 
         callCount.get mustBe 2
       }
@@ -318,7 +317,7 @@ class SCaffeineSpec extends AnyWordSpecLike with Matchers with BeforeAndAfterEac
         val syncCache = asyncCache.synchronous()
         asyncCache.put("one", Future(fun("one")))
         val (result, ms) = time[Int](syncCache.get("one"))
-        result mustBe 3
+        result mustBe 3: Unit
         ms must be(tickMillis +- tickFuzz)
       }
 
@@ -327,7 +326,7 @@ class SCaffeineSpec extends AnyWordSpecLike with Matchers with BeforeAndAfterEac
         val syncCache = asyncCache.synchronous()
         syncCache.put("one", 3)
         val (result1, ms1) = time[Int](await(asyncCache.get("one")))
-        result1 mustBe 3
+        result1 mustBe 3: Unit
         ms1 must be < tickFuzz
       }
     }
