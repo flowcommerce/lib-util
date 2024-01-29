@@ -77,6 +77,10 @@ trait CacheWithFallbackToStaleData[K, V] extends Shutdownable {
     cache.underlying.invalidate(key)
   }
 
+  def flushAll(): Unit = {
+    cache.underlying.invalidateAll()
+  }
+
   /** Forces an asynchronous refresh of the specified key. If the key was present before, the cache will continue to
     * return the previous value until the Future has completed.
     *

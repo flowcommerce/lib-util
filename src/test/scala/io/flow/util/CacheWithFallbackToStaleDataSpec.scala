@@ -121,11 +121,31 @@ class CacheWithFallbackToStaleDataSpec extends AnyWordSpecLike with Matchers {
     an[Exception] must be thrownBy cache.get("a")
   }
 
+  "throws if refresh fails after flushAll" in {
+    val cache = TestCacheWithFallbackToStaleData[String]()
+    cache.set("a", "apple")
+    cache.flushAll()
+
+    cache.refreshShouldFail = true
+
+    an[Exception] must be thrownBy cache.get("a")
+  }
+
   "flushed key is immediately refreshed" in {
     val cache = TestCacheWithFallbackToStaleData[String]()
     cache.set("a", "apple")
     cache.setNextValue("a", "foo")
     cache.flush("a")
+
+    // succeeding refresh should return old value
+    cache.get("a") must equal("foo")
+  }
+
+  "key is immediately refreshed after flushAll" in {
+    val cache = TestCacheWithFallbackToStaleData[String]()
+    cache.set("a", "apple")
+    cache.setNextValue("a", "foo")
+    cache.flushAll()
 
     // succeeding refresh should return old value
     cache.get("a") must equal("foo")
@@ -138,6 +158,16 @@ class CacheWithFallbackToStaleDataSpec extends AnyWordSpecLike with Matchers {
     cache.setNextValue("a", "foo")
     cache.get("a") must not equal ("foo")
     cache.flush("a")
+    cache.get("a") must equal("foo")
+  }
+
+  "trigger refresh after flushAll" in {
+    val cache = TestCacheWithFallbackToStaleData[String]()
+    cache.setNextValue("a", "apple")
+    cache.get("a") must equal("apple")
+    cache.setNextValue("a", "foo")
+    cache.get("a") must not equal ("foo")
+    cache.flushAll()
     cache.get("a") must equal("foo")
   }
 
