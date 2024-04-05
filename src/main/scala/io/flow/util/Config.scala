@@ -30,8 +30,7 @@ class ChainedConfig(configs: Seq[Config]) extends Config {
 }
 
 object ChainedConfig {
-  @deprecated("0.0.7", "Use constructor")
-  def apply(configs: Seq[Config]): ChainedConfig = new ChainedConfig(configs)
+  def apply(configs: Config*): ChainedConfig = new ChainedConfig(configs)
 }
 
 object EnvironmentConfig extends EnvironmentConfigLike {
