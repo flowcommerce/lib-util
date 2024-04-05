@@ -1,6 +1,6 @@
 package io.flow.util.clients
 
-import io.flow.util.{EnvironmentConfig, FlowEnvironment, PropertyConfig}
+import io.flow.util.{ChainedConfig, Config, EnvironmentConfig, FlowEnvironment, PropertyConfig}
 import org.slf4j.{Logger, LoggerFactory}
 
 import java.net.InetAddress
@@ -30,11 +30,18 @@ object RegistryConstants {
 
   private[clients] val DnsLookupWaitTime = 100.millis
 
-  private val logger: Logger = LoggerFactory.getLogger(getClass)
+  private val logger: Logger = {
+    val name = getClass.getName.reverse.dropWhile(_ == '$').reverse
+    LoggerFactory.getLogger(name)
+  }
+
+  private val config: Config = ChainedConfig(EnvironmentConfig, PropertyConfig)
 
   val ProductionDomain = "api.flow.io"
 
   val WorkstationHostVariableName = "WORKSTATION_HOST"
+
+  val DisableInternalLookup = "DISABLE_INTERNAL_HOSTNAME_LOOKUP"
 
   val DefaultWorkstationHost = "ws"
 
@@ -45,18 +52,19 @@ object RegistryConstants {
   /** The resolved name of the host used in workstation
     */
   private[this] lazy val workstationHost: String = {
-    EnvironmentConfig.optionalString(WorkstationHostVariableName).getOrElse {
-      PropertyConfig.optionalString(WorkstationHostVariableName).getOrElse {
-        logger.info(
-          s"[${getClass.getName}] defaulting workstationHost to '$DefaultWorkstationHost' (can override via env var[$WorkstationHostVariableName])",
-        )
-        DefaultWorkstationHost
-      }
+    config.optionalString(WorkstationHostVariableName).getOrElse {
+      logger.info(
+        s"${logger.getName}: defaulting workstationHost to '$DefaultWorkstationHost' (can override via env var[$WorkstationHostVariableName])",
+      )
+      DefaultWorkstationHost
     }
   }
 
+  private[clients] lazy val internalLookupDisabled =
+    config.optionalBoolean(RegistryConstants.DisableInternalLookup).getOrElse(false)
+
   def log(env: String, applicationId: String, message: String): Unit = {
-    logger.info(s"[${getClass.getName} $env] app[$applicationId] $message")
+    logger.info(s"${logger.getName}: env[$env] app[$applicationId] $message")
   }
 
   /** Returns the public hostname of the specified application in the production environment.
@@ -88,11 +96,17 @@ class ProductionRegistry() extends Registry {
   import RegistryConstants.ec
 
   override def host(applicationId: String): String = {
-    val host = Try {
-      Await.result(asyncDnsLookupByName(applicationId), RegistryConstants.DnsLookupWaitTime)
-    }.fold(_ => RegistryConstants.productionHost(applicationId), _ => s"http://$applicationId")
+    val publicHost = RegistryConstants.productionHost(applicationId)
 
-    RegistryConstants.log("Production", applicationId, s"Host[$host]")
+    val host = if (RegistryConstants.internalLookupDisabled) {
+      publicHost
+    } else {
+      Try {
+        Await.result(asyncDnsLookupByName(applicationId), RegistryConstants.DnsLookupWaitTime)
+      }.fold(_ => publicHost, _ => s"http://$applicationId")
+    }
+
+    RegistryConstants.log("Production", applicationId, s"host[$host]")
     host
   }
 
