@@ -7,6 +7,12 @@ ThisBuild / javacOptions ++= Seq("-source", "17", "-target", "17")
 
 enablePlugins(GitVersioning)
 git.useGitDescribe := true
+coverageExcludedFiles := ".*\\/src/main/scala/generated\\/.*"
+coverageDataDir := file("target/scala-2.13")
+coverageHighlighting := true
+coverageFailOnMinimum := true
+coverageMinimumStmtTotal := 75
+coverageMinimumBranchTotal := 70
 
 lazy val allScalacOptions = Seq(
   "-feature",
