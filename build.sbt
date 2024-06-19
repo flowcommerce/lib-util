@@ -24,7 +24,7 @@ scalacOptions ++= Seq(
 Test / scalacOptions ++= Seq(
   // Allow using -Wnonunit-statement to find bugs in tests without exploding from scalatest assertions
   "-Wconf:msg=unused value of type org.scalatest.Assertion:s",
-  "-Wconf:msg=unused value of type org.scalamock:s"
+  "-Wconf:msg=unused value of type org.scalamock:s",
 )
 
 doc / javacOptions := Seq("-encoding", "UTF-8")
