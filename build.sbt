@@ -2,11 +2,17 @@ name := "lib-util"
 
 organization := "io.flow"
 
-scalaVersion := "2.13.10"
+scalaVersion := "2.13.13"
 ThisBuild / javacOptions ++= Seq("-source", "17", "-target", "17")
 
 enablePlugins(GitVersioning)
 git.useGitDescribe := true
+coverageExcludedFiles := ".*\\/src/main/scala/generated\\/.*"
+coverageDataDir := file("target/scala-2.13")
+coverageHighlighting := true
+coverageFailOnMinimum := true
+coverageMinimumStmtTotal := 75
+coverageMinimumBranchTotal := 70
 
 scalacOptions ++= Seq(
   "-feature",
@@ -42,7 +48,7 @@ libraryDependencies ++= Seq(
   "com.github.blemale" %% "scaffeine" % "5.2.1",
   "org.mockito" % "mockito-scala_2.13" % "1.11.3" % Test,
   "org.scalatest" %% "scalatest" % "3.2.18" % Test,
-  "org.scalacheck" %% "scalacheck" % "1.17.0" % Test,
+  "org.scalacheck" %% "scalacheck" % "1.18.0" % Test,
   "org.scalatestplus" %% "scalacheck-1-14" % "3.2.2.0" % Test,
 )
 Test / javaOptions ++= Seq(
