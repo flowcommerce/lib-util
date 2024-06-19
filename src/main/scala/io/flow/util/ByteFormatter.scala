@@ -51,9 +51,9 @@ object ByteFormatter {
 
       val res = absBytes / divisor
       3 - res.toLong.toString.length match {
-        case 2 => f"$signum${df2.format(res)} ${unitString}B"
-        case 1 => f"$signum${df1.format(res)} ${unitString}B"
-        case _ => f"$signum${df0.format(res)} ${unitString}B"
+        case 2 => s"$signum${df2.format(res)} ${unitString}B"
+        case 1 => s"$signum${df1.format(res)} ${unitString}B"
+        case _ => s"$signum${df0.format(res)} ${unitString}B"
       }
 
     }

@@ -42,6 +42,11 @@ class ByteFormatterSpec extends AnyWordSpec with Matchers {
       ByteFormatter.byteCountSI(1000000000000L) mustBe "1 TB"
       ByteFormatter.byteCountSI(999999999999999L) mustBe "999 TB"
     }
+
+    "Extreme values" in {
+      ByteFormatter.byteCountSI(Long.MinValue) mustBe "-9.22 EB"
+      ByteFormatter.byteCountSI(Long.MaxValue) mustBe "9.22 EB"
+    }
   }
 
   "Binary byte count" should {
@@ -82,6 +87,11 @@ class ByteFormatterSpec extends AnyWordSpec with Matchers {
     "TiB values" in {
       ByteFormatter.byteCountBinary(1024L * 1024 * 1024 * 1024) mustBe "1 TiB"
       ByteFormatter.byteCountBinary(1024L * 1024 * 1024 * 1024 * 1024 - 1) mustBe "1023 TiB"
+    }
+
+    "Extreme values" in {
+      ByteFormatter.byteCountBinary(Long.MinValue) mustBe "-8 EiB"
+      ByteFormatter.byteCountBinary(Long.MaxValue) mustBe "8 EiB"
     }
   }
 }

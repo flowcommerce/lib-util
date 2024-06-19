@@ -69,5 +69,7 @@ class DurationFormatterSpec extends AnyWordSpec with Matchers {
     DurationFormatter.format(24.hours) mustBe "1 days"
     DurationFormatter.format(86400000000000L.nanos) mustBe "1 days"
     DurationFormatter.format(100000.days) mustBe "100000 days"
+    DurationFormatter.format(Long.MaxValue.nanos) mustBe "106751 days"
+    DurationFormatter.format((Long.MinValue + 1L).nanos) mustBe "-106751 days"
   }
 }
