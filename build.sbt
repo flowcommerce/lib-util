@@ -2,7 +2,7 @@ name := "lib-util"
 
 organization := "io.flow"
 
-scalaVersion := "2.13.14"
+scalaVersion := "2.13.15"
 ThisBuild / javacOptions ++= Seq("-source", "17", "-target", "17")
 
 enablePlugins(GitVersioning)
