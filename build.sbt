@@ -1,5 +1,5 @@
 name := "lib-util"
-
+version := "1.0.0-SNAPSHOT"
 organization := "io.flow"
 
 scalaVersion := "2.13.15"
@@ -34,9 +34,9 @@ licenses += ("MIT", url("http://opensource.org/licenses/MIT"))
 resolvers += "Artifactory" at "https://flow.jfrog.io/flow/libs-release/"
 
 libraryDependencies ++= Seq(
-  "joda-time" % "joda-time" % "2.12.7", // This is temporary, should use java.time.*
-  "org.slf4j" % "slf4j-api" % "1.7.36", // Must follow Play - https://github.com/playframework/playframework/blob/2.8.x/project/Dependencies.scala#L52
-  "org.joda" % "joda-convert" % "3.0.1",
+  "joda-time" % "joda-time" % "2.12.7", // Used by generated API builder code
+  "org.slf4j" % "slf4j-api" % "2.0.16", // Must follow Play - https://github.com/playframework/playframework/blob/2.8.x/project/Dependencies.scala#L52
+//  "org.joda" % "joda-convert" % "3.0.1",
   "org.scala-lang" % "scala-reflect" % scalaVersion.value,
   "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.2",
   "com.github.blemale" %% "scaffeine" % "5.3.0",
