@@ -40,6 +40,7 @@ libraryDependencies ++= Seq(
   "org.scala-lang" % "scala-reflect" % scalaVersion.value,
   "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.2",
   "com.github.blemale" %% "scaffeine" % "5.3.0",
+  "ch.qos.logback" % "logback-classic" % "1.4.11" % Test,
   "org.mockito" % "mockito-scala_2.13" % "1.11.3" % Test,
   "org.scalatest" %% "scalatest" % "3.2.18" % Test,
   "org.scalacheck" %% "scalacheck" % "1.18.1" % Test,
