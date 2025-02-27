@@ -102,18 +102,24 @@ class ProductionRegistry() extends Registry {
       publicHost
     } else {
       Try {
-        Await.result(asyncDnsLookupByName(applicationId), RegistryConstants.DnsLookupWaitTime)
-      }.fold(_ => publicHost, _ => s"http://$applicationId")
+        val future = Future.find(Seq(
+          asyncDnsLookupByName(applicationId),
+          asyncDnsLookupByName(s"$applicationId.$applicationId"),
+          asyncDnsLookupByName(s"$applicationId.production"),
+        ))(_ => true)
+        Await.result(future, RegistryConstants.DnsLookupWaitTime)
+      }.toOption.flatten.fold(publicHost)(localHost => s"http://$localHost")
     }
 
     RegistryConstants.log("Production", applicationId, s"host[$host]")
     host
   }
 
-  protected def asyncDnsLookupByName(name: String): Future[Unit] = {
+  protected def asyncDnsLookupByName(name: String): Future[String] = {
     Future {
       InetAddress.getByName(name)
-    }.map(_ => ())
+      name
+    }
   }
 }
 
