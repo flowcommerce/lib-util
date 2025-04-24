@@ -16,6 +16,8 @@ import scala.util.{Failure, Success, Try}
 trait CacheWithFallbackToStaleData[K, V] extends Shutdownable {
   private val logger: Logger = LoggerFactory.getLogger(getClass)
 
+  protected def statsCounter: CacheStatsCounter = CacheStatsCounter.NoOpCacheStatsCounter
+
   private[this] val cache: LoadingCache[K, V] = Scaffeine()
     .refreshAfterWrite(refreshInterval)
     .expireAfter(
@@ -23,6 +25,7 @@ trait CacheWithFallbackToStaleData[K, V] extends Shutdownable {
       update = (k: K, v: V, _: FiniteDuration) => computeExpiry(k, v),
       read = (_: K, _: V, d: FiniteDuration) => d,
     )
+    .recordStats(() => CacheWithFallbackToStaleData.StatusCounterAdapter(statsCounter))
     .build[K, V](
       loader = refresh _,
     )
@@ -126,5 +129,34 @@ trait CacheWithFallbackToStaleData[K, V] extends Shutdownable {
       option.fold(expireNoneInterval)(_ => expireInterval)
     case _ =>
       expireInterval
+  }
+}
+
+object CacheWithFallbackToStaleData {
+  import com.github.benmanes.caffeine.cache.RemovalCause
+  import com.github.benmanes.caffeine.cache.stats.{CacheStats, StatsCounter}
+  import io.flow.util.CacheStatsCounter.RemovalReason
+
+  private case class StatusCounterAdapter(delegate: CacheStatsCounter) extends StatsCounter {
+
+    override def recordHits(count: Int): Unit = delegate.recordHits(count.longValue)
+
+    override def recordMisses(count: Int): Unit = delegate.recordMisses(count.longValue)
+
+    override def recordLoadSuccess(loadTimeNanos: Long): Unit = delegate.recordLoadSuccess(loadTimeNanos)
+
+    override def recordLoadFailure(loadTimeNanos: Long): Unit = delegate.recordLoadFailure(loadTimeNanos)
+
+    override def recordEviction(weight: Int, cause: RemovalCause): Unit = delegate.recordRemoval(removalReason(cause))
+
+    override def snapshot(): CacheStats = CacheStats.empty
+
+    private def removalReason(cause: RemovalCause): RemovalReason = cause match {
+      case RemovalCause.EXPLICIT => RemovalReason.Explicit
+      case RemovalCause.REPLACED => RemovalReason.Replaced
+      case RemovalCause.COLLECTED => RemovalReason.Collected
+      case RemovalCause.EXPIRED => RemovalReason.Expired
+      case RemovalCause.SIZE => RemovalReason.SizeConstraint
+    }
   }
 }
