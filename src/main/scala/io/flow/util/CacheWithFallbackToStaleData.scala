@@ -13,10 +13,10 @@ import scala.util.{Failure, Success, Try}
   * Refreshes data on demand (when you call `get`, if entry is not in cache executes the refresh function then). If the
   * call to `get` fails, and and there is data cached in memory, you will get back the stale data.
   */
-trait CacheWithFallbackToStaleData[K, V] extends Shutdownable {
-  private val logger: Logger = LoggerFactory.getLogger(getClass)
+trait CacheWithFallbackToStaleData[K, V] extends Shutdownable with NoOpCacheStatsRecorder {
+  self: HasCacheStatsRecorder =>
 
-  protected def statsCounter: CacheStatsCounter = CacheStatsCounter.NoOpCacheStatsCounter
+  private val logger: Logger = LoggerFactory.getLogger(getClass)
 
   private[this] val cache: LoadingCache[K, V] = Scaffeine()
     .refreshAfterWrite(refreshInterval)
@@ -25,7 +25,7 @@ trait CacheWithFallbackToStaleData[K, V] extends Shutdownable {
       update = (k: K, v: V, _: FiniteDuration) => computeExpiry(k, v),
       read = (_: K, _: V, d: FiniteDuration) => d,
     )
-    .recordStats(() => CacheWithFallbackToStaleData.StatusCounterAdapter(statsCounter))
+    .recordStats(() => new CacheWithFallbackToStaleData.CaffeineStatsCounterAdapter(() => cacheStatsRecorder))
     .build[K, V](
       loader = refresh _,
     )
@@ -135,9 +135,11 @@ trait CacheWithFallbackToStaleData[K, V] extends Shutdownable {
 object CacheWithFallbackToStaleData {
   import com.github.benmanes.caffeine.cache.RemovalCause
   import com.github.benmanes.caffeine.cache.stats.{CacheStats, StatsCounter}
-  import io.flow.util.CacheStatsCounter.RemovalReason
+  import io.flow.util.CacheStatsRecorder.RemovalReason
 
-  private case class StatusCounterAdapter(delegate: CacheStatsCounter) extends StatsCounter {
+  private class CaffeineStatsCounterAdapter(f: () => CacheStatsRecorder) extends StatsCounter {
+
+    private lazy val delegate: CacheStatsRecorder = f()
 
     override def recordHits(count: Int): Unit = delegate.recordHits(count.longValue)
 

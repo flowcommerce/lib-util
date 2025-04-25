@@ -1,15 +1,25 @@
 package io.flow.util
 
-trait CacheStatsCounter {
+/** A structural type indicating there is a stats counter available.
+  */
+trait HasCacheStatsRecorder {
+  def cacheStatsRecorder: CacheStatsRecorder
+}
+
+trait NoOpCacheStatsRecorder extends HasCacheStatsRecorder {
+  override def cacheStatsRecorder: CacheStatsRecorder = CacheStatsRecorder.NoOpCacheStatsRecorder
+}
+
+trait CacheStatsRecorder {
   def recordHits(count: Long): Unit
   def recordMisses(count: Long): Unit
   def recordLoadSuccess(loadTimeNanos: Long): Unit
   def recordLoadFailure(loadTimeNanos: Long): Unit
-  def recordRemoval(reason: CacheStatsCounter.RemovalReason): Unit
+  def recordRemoval(reason: CacheStatsRecorder.RemovalReason): Unit
 }
 
-object CacheStatsCounter {
-  case object NoOpCacheStatsCounter extends CacheStatsCounter {
+object CacheStatsRecorder {
+  case object NoOpCacheStatsRecorder extends CacheStatsRecorder {
     override def recordHits(count: Long): Unit = ()
     override def recordMisses(count: Long): Unit = ()
     override def recordLoadSuccess(loadTimeNanos: Long): Unit = ()
