@@ -1,6 +1,6 @@
 package io.flow.util
 
-/** A structural type indicating there is a stats counter available.
+/** A structural type indicating there is a stats recorder available.
   */
 trait HasCacheStatsRecorder {
   def cacheStatsRecorder: CacheStatsRecorder
