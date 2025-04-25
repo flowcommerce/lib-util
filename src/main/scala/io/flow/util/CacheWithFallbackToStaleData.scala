@@ -153,6 +153,7 @@ object CacheWithFallbackToStaleData {
 
     override def snapshot(): CacheStats = CacheStats.empty
 
+    // $COVERAGE-OFF$
     private def removalReason(cause: RemovalCause): RemovalReason = cause match {
       case RemovalCause.EXPLICIT => RemovalReason.Explicit
       case RemovalCause.REPLACED => RemovalReason.Replaced
@@ -160,5 +161,6 @@ object CacheWithFallbackToStaleData {
       case RemovalCause.EXPIRED => RemovalReason.Expired
       case RemovalCause.SIZE => RemovalReason.SizeConstraint
     }
+    // $COVERAGE-ON$
   }
 }
