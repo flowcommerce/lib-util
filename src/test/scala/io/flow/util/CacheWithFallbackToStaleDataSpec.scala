@@ -1,7 +1,7 @@
 package io.flow.util
 
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.{AtomicInteger, AtomicLong, AtomicReference}
 import org.scalatest.concurrent.Eventually.{eventually, timeout}
 import org.scalatest.time.{Seconds, Span}
 
@@ -55,6 +55,47 @@ class CacheWithFallbackToStaleDataSpec extends AnyWordSpecLike with Matchers {
       ()
     }
 
+  }
+
+  private case class TestStatsRecorder() extends CacheStatsRecorder {
+    private val hitCounter: AtomicLong = new AtomicLong()
+    private val missCounter: AtomicLong = new AtomicLong()
+    private val loadSuccessCounter: AtomicLong = new AtomicLong()
+    private val loadFailureCounter: AtomicLong = new AtomicLong()
+    private val recordRemovalCounter = new AtomicReference[(Long, Seq[CacheStatsRecorder.RemovalReason])]((0L, Nil))
+
+    def reset(): Unit = {
+      Seq(hitCounter, missCounter, loadSuccessCounter, loadFailureCounter).foreach(_.set(0L))
+      recordRemovalCounter.set((0L, Nil))
+    }
+    def hitCount: Long = hitCounter.get()
+    def missCount: Long = missCounter.get()
+    def loadSuccessCount: Long = loadSuccessCounter.get()
+    def loadFailureCount: Long = loadFailureCounter.get()
+    def removalCount: Long = recordRemovalCounter.get()._1
+    def removalReasons: Option[CacheStatsRecorder.RemovalReason] = recordRemovalCounter.get()._2.lastOption
+    def lastRemovalReason: Option[CacheStatsRecorder.RemovalReason] = removalReasons.lastOption
+
+    override def recordHits(count: Long): Unit = hitCounter.addAndGet(count)
+    override def recordMisses(count: Long): Unit = missCounter.addAndGet(count)
+    override def recordLoadSuccess(loadTimeNanos: Long): Unit = {
+      assert(loadTimeNanos > 0)
+      loadSuccessCounter.incrementAndGet()
+    }
+    override def recordLoadFailure(loadTimeNanos: Long): Unit = {
+      assert(loadTimeNanos > 0)
+      loadFailureCounter.incrementAndGet()
+    }
+    override def recordRemoval(reason: CacheStatsRecorder.RemovalReason): Unit = {
+      recordRemovalCounter.getAndAccumulate(
+        (1L, Seq(reason)),
+        (current, update) => {
+          val (curCount, curReasons) = current
+          val (increment, newReason) = update
+          (curCount + increment, curReasons ++ newReason)
+        },
+      )
+    }
   }
 
   private[this] def eventuallyInNSeconds[T](n: Int)(f: => T): T = {
@@ -384,5 +425,40 @@ class CacheWithFallbackToStaleDataSpec extends AnyWordSpecLike with Matchers {
     t1 must be < 100L
 
     cache.numberRefreshes must equal(0)
+  }
+
+  "cache stats" in {
+    val stats = TestStatsRecorder()
+    def verify(
+      expectedHitCount: Long = 0L,
+      expectedMissCount: Long = 0L,
+      expectedLoadSuccessCount: Long = 0L,
+      expectedLoadFailureCount: Long = 0L,
+      expectedRemovalReason: Option[CacheStatsRecorder.RemovalReason] = None,
+    ) = {
+      assert(stats.hitCount == expectedHitCount, "hit count")
+      assert(stats.missCount == expectedMissCount, "miss count")
+      assert(stats.loadSuccessCount == expectedLoadSuccessCount, "load success count")
+      assert(stats.loadFailureCount == expectedLoadFailureCount, "load failure count")
+      assert(stats.lastRemovalReason == expectedRemovalReason, "last removal reason")
+    }
+
+    val cache = new TestCacheWithFallbackToStaleData[String]() {
+      override val cacheStatsRecorder: CacheStatsRecorder = stats
+    }
+    verify()
+    cache.putAll(Map("a" -> "apple"))
+    verify()
+    cache.get("a")
+    verify(expectedHitCount = 1L)
+    cache.setNextValue("b", "bounty")
+    cache.get("b")
+    verify(expectedHitCount = 1L, expectedMissCount = 1L, expectedLoadSuccessCount = 1L)
+
+    stats.reset()
+    cache.refreshShouldFail = true
+    cache.flush("a")
+    an[Exception] must be thrownBy cache.get("a")
+    verify(expectedMissCount = 1L, expectedLoadFailureCount = 1L)
   }
 }

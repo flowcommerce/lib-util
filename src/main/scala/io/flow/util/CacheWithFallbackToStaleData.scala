@@ -13,7 +13,9 @@ import scala.util.{Failure, Success, Try}
   * Refreshes data on demand (when you call `get`, if entry is not in cache executes the refresh function then). If the
   * call to `get` fails, and and there is data cached in memory, you will get back the stale data.
   */
-trait CacheWithFallbackToStaleData[K, V] extends Shutdownable {
+trait CacheWithFallbackToStaleData[K, V] extends Shutdownable with NoOpCacheStatsRecorder {
+  self: HasCacheStatsRecorder =>
+
   private val logger: Logger = LoggerFactory.getLogger(getClass)
 
   private[this] val cache: LoadingCache[K, V] = Scaffeine()
@@ -23,6 +25,7 @@ trait CacheWithFallbackToStaleData[K, V] extends Shutdownable {
       update = (k: K, v: V, _: FiniteDuration) => computeExpiry(k, v),
       read = (_: K, _: V, d: FiniteDuration) => d,
     )
+    .recordStats(() => new CacheWithFallbackToStaleData.CaffeineStatsCounterAdapter(() => cacheStatsRecorder))
     .build[K, V](
       loader = refresh _,
     )
@@ -126,5 +129,38 @@ trait CacheWithFallbackToStaleData[K, V] extends Shutdownable {
       option.fold(expireNoneInterval)(_ => expireInterval)
     case _ =>
       expireInterval
+  }
+}
+
+object CacheWithFallbackToStaleData {
+  import com.github.benmanes.caffeine.cache.RemovalCause
+  import com.github.benmanes.caffeine.cache.stats.{CacheStats, StatsCounter}
+  import io.flow.util.CacheStatsRecorder.RemovalReason
+
+  private class CaffeineStatsCounterAdapter(f: () => CacheStatsRecorder) extends StatsCounter {
+
+    private lazy val delegate: CacheStatsRecorder = f()
+
+    override def recordHits(count: Int): Unit = delegate.recordHits(count.longValue)
+
+    override def recordMisses(count: Int): Unit = delegate.recordMisses(count.longValue)
+
+    override def recordLoadSuccess(loadTimeNanos: Long): Unit = delegate.recordLoadSuccess(loadTimeNanos)
+
+    override def recordLoadFailure(loadTimeNanos: Long): Unit = delegate.recordLoadFailure(loadTimeNanos)
+
+    override def recordEviction(weight: Int, cause: RemovalCause): Unit = delegate.recordRemoval(removalReason(cause))
+
+    override def snapshot(): CacheStats = CacheStats.empty
+
+    // $COVERAGE-OFF$
+    private def removalReason(cause: RemovalCause): RemovalReason = cause match {
+      case RemovalCause.EXPLICIT => RemovalReason.Explicit
+      case RemovalCause.REPLACED => RemovalReason.Replaced
+      case RemovalCause.COLLECTED => RemovalReason.Collected
+      case RemovalCause.EXPIRED => RemovalReason.Expired
+      case RemovalCause.SIZE => RemovalReason.SizeConstraint
+    }
+    // $COVERAGE-ON$
   }
 }
