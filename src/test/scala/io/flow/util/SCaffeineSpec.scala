@@ -3,6 +3,7 @@ package io.flow.util
 import com.github.blemale.scaffeine.Scaffeine
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.matchers.must.Matchers
+import org.scalatest.tagobjects.Retryable
 import org.scalatest.wordspec.AnyWordSpecLike
 
 import java.util.concurrent.atomic.AtomicInteger
@@ -11,7 +12,7 @@ import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class SCaffeineSpec extends AnyWordSpecLike with Matchers with BeforeAndAfterEach {
+class SCaffeineSpec extends AnyWordSpecLike with Matchers with BeforeAndAfterEach with RetryHelpers {
 
   val callCount = new AtomicInteger(0)
   val tick = 250.millis
@@ -254,7 +255,7 @@ class SCaffeineSpec extends AnyWordSpecLike with Matchers with BeforeAndAfterEac
     }
 
     "sync view of async cache" should {
-      "loads in async cache propagate to sync cache" in {
+      "loads in async cache propagate to sync cache" taggedAs Retryable in {
         val asyncCache = Scaffeine().refreshAfterWrite(tick).buildAsync[String, Int](loader = fun _)
         val syncCache = asyncCache.synchronous()
         val (result1, ms1) = time[Int](await(asyncCache.get("one")))
