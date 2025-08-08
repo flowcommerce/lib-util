@@ -34,16 +34,16 @@ licenses += ("MIT", url("http://opensource.org/licenses/MIT"))
 resolvers += "Artifactory" at "https://flow.jfrog.io/flow/libs-release/"
 
 libraryDependencies ++= Seq(
-  "joda-time" % "joda-time" % "2.13.0",
-  "org.slf4j" % "slf4j-api" % "2.0.16", // Must follow Play -https://github.com/playframework/playframework/blob/2.9.6/project/Dependencies.scala#L70
+  "joda-time" % "joda-time" % "2.13.1",
+  "org.slf4j" % "slf4j-api" % "2.0.17", // Must follow Play -https://github.com/playframework/playframework/blob/2.9.6/project/Dependencies.scala#L70
   "org.joda" % "joda-convert" % "3.0.1",
   "org.scala-lang" % "scala-reflect" % scalaVersion.value,
   "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.2",
   "com.github.blemale" %% "scaffeine" % "5.3.0",
-  "org.mockito" % "mockito-scala_2.13" % "1.11.3" % Test,
-  "org.scalatest" %% "scalatest" % "3.2.18" % Test,
+  "org.mockito" % "mockito-scala_2.13" % "1.11.4" % Test,
+  "org.scalatest" %% "scalatest" % "3.2.19" % Test,
   "org.scalacheck" %% "scalacheck" % "1.18.1" % Test,
-  "org.scalatestplus" %% "scalacheck-1-14" % "3.2.2.0" % Test,
+  "org.scalatestplus" %% "scalacheck-1-15" % "3.2.11.0" % Test,
 )
 Test / javaOptions ++= Seq(
   "--add-exports=java.base/sun.security.x509=ALL-UNNAMED",
