@@ -35,7 +35,7 @@ resolvers += "Artifactory" at "https://flow.jfrog.io/flow/libs-release/"
 
 libraryDependencies ++= Seq(
   "joda-time" % "joda-time" % "2.13.1",
-  "org.slf4j" % "slf4j-api" % "2.0.16", // Must follow Play -https://github.com/playframework/playframework/blob/2.9.6/project/Dependencies.scala#L70
+  "org.slf4j" % "slf4j-api" % "2.0.17", // Must follow Play -https://github.com/playframework/playframework/blob/2.9.6/project/Dependencies.scala#L70
   "org.joda" % "joda-convert" % "3.0.1",
   "org.scala-lang" % "scala-reflect" % scalaVersion.value,
   "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.2",
