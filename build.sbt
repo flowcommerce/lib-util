@@ -42,8 +42,8 @@ libraryDependencies ++= Seq(
   "com.github.blemale" %% "scaffeine" % "5.3.0",
   "org.mockito" % "mockito-scala_2.13" % "2.0.0" % Test,
   "org.scalatest" %% "scalatest" % "3.2.19" % Test,
-  "org.scalacheck" %% "scalacheck" % "1.19.0" % Test,
-  "org.scalatestplus" %% "scalacheck-1-16" % "3.2.14.0" % Test,
+   "org.scalacheck"     %% "scalacheck"         % "1.18.1"  % Test,
+   "org.scalatestplus"  %% "scalacheck-1-18"    % "3.2.19.0" % Test,
 )
 Test / javaOptions ++= Seq(
   "--add-exports=java.base/sun.security.x509=ALL-UNNAMED",
